@@ -1,0 +1,485 @@
+@page "/board/{ToUserId}"
+
+@using Chess.Shared.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Threading
+@using System.Linq.Dynamic.Core
+@inject NavigationManager _navigationManager
+@inject HttpClient _http
+@inject IJSRuntime _jsRuntime
+@inject HttpClient _httpClient
+
+
+<div class="panel panel-primary">
+
+<div class="container">
+@if (MyState.FromUserId == FromUserId && MyState.IsOnline)
+{
+    <div class="online-indicator">
+        <span class="blink"></span>
+    </div>
+    <h2 class="online-text">You are Online</h2>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <button class="btn btn-primary" @onclick="Send">Go Offline </button>
+}
+else if (MyState.FromUserId == FromUserId && MyState.IsOnline == false)
+{
+    <div class="offline-indicator">
+    </div>
+
+    <h2 class="online-text">You are Offline</h2>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <button class="btn btn-primary" @onclick="Send">Go Online </button>
+}
+@if (ToUserState)
+{
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <div class="online-indicator">
+        <span class="blink"></span>
+    </div>
+    <h2 class="online-text">@ToUser?.FirstName is Online</h2>
+}
+else
+{
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+    <div class="offline-indicator">
+        <span class="off-blink"></span>
+    </div>
+    <h2 class="online-text">@ToUser?.FirstName is Offline</h2>
+}
+
+
+<div class="container">
+
+
+<div id="board-layout-main" class="board-layout-main" style="padding-inline-start: 37px;">
+
+<chess-board id="board-board1632857578401" class="board @(Flipped)">
+
+
+@if (Flipped != "")
+{
+    <svg viewBox="0 0 100 100" class="coordinates outside">
+        <text x="2" y="3.5" font-size="3.1" class="coordinate-grey">1</text><text x="2" y="16" font-size="3.1" class="coordinate-grey">2</text><text x="2" y="28.5" font-size="3.1" class="coordinate-grey">3</text><text x="2" y="41" font-size="3.1" class="coordinate-grey">4</text><text x="2" y="53.5" font-size="3.1" class="coordinate-grey">5</text><text x="2" y="66" font-size="3.1" class="coordinate-grey">6</text><text x="2" y="78.5" font-size="3.1" class="coordinate-grey">7</text><text x="2" y="91" font-size="3.1" class="coordinate-grey">8</text><text x="10.35" y="99.25" font-size="3.1" class="coordinate-grey">h</text><text x="22.85" y="99.25" font-size="3.1" class="coordinate-grey">g</text><text x="35.35" y="99.25" font-size="3.1" class="coordinate-grey">f</text><text x="47.85" y="99.25" font-size="3.1" class="coordinate-grey">e</text><text x="60.35" y="99.25" font-size="3.1" class="coordinate-grey">d</text><text x="72.85" y="99.25" font-size="3.1" class="coordinate-grey">c</text><text x="85.35" y="99.25" font-size="3.1" class="coordinate-grey">b</text><text x="97.85" y="99.25" font-size="3.1" class="coordinate-grey">a</text>
+    </svg>
+}
+else
+{
+    <svg viewBox="0 0 100 100" class="coordinates outside">
+        <text x="2" y="3.5" font-size="3.1" class="coordinate-grey">8</text><text x="2" y="16" font-size="3.1" class="coordinate-grey">7</text><text x="2" y="28.5" font-size="3.1" class="coordinate-grey">6</text><text x="2" y="41" font-size="3.1" class="coordinate-grey">5</text><text x="2" y="53.5" font-size="3.1" class="coordinate-grey">4</text><text x="2" y="66" font-size="3.1" class="coordinate-grey">3</text><text x="2" y="78.5" font-size="3.1" class="coordinate-grey">2</text><text x="2" y="91" font-size="3.1" class="coordinate-grey">1</text><text x="10.35" y="99.25" font-size="3.1" class="coordinate-grey">a</text><text x="22.85" y="99.25" font-size="3.1" class="coordinate-grey">b</text><text x="35.35" y="99.25" font-size="3.1" class="coordinate-grey">c</text><text x="47.85" y="99.25" font-size="3.1" class="coordinate-grey">d</text><text x="60.35" y="99.25" font-size="3.1" class="coordinate-grey">e</text><text x="72.85" y="99.25" font-size="3.1" class="coordinate-grey">f</text><text x="85.35" y="99.25" font-size="3.1" class="coordinate-grey">g</text><text x="97.85" y="99.25" font-size="3.1" class="coordinate-grey">h</text>
+    </svg>
+}
+
+
+
+<div class="@(HighLightedSquare1)" style="background-color: rgb(255, 255, 0); opacity: 0.5;" data-test-element="highlight"></div>
+<div class="@(HighLightedSquare2)" style="background-color: rgb(255, 255, 0); opacity: 0.5;" data-test-element="highlight"></div>
+
+<div class="piece @(ChessBoard[11].Type) square-11" @onclick="() => Clicked(11)"></div>
+<div class="piece @(ChessBoard[21].Type) square-21" @onclick="() => Clicked(21)"></div>
+<div class="piece @(ChessBoard[31].Type) square-31" @onclick="() => Clicked(31)"></div>
+<div class="piece @(ChessBoard[41].Type) square-41" @onclick="() => Clicked(41)"></div>
+<div class="piece @(ChessBoard[51].Type) square-51" @onclick="() => Clicked(51)"></div>
+<div class="piece @(ChessBoard[81].Type) square-81" @onclick="() => Clicked(81)"></div>
+<div class="piece @(ChessBoard[71].Type) square-71" @onclick="() => Clicked(71)"></div>
+<div class="piece @(ChessBoard[61].Type) square-61" @onclick="() => Clicked(61)"></div>
+<div class="piece @(ChessBoard[12].Type) square-12" @onclick="() => Clicked(12)"></div>
+<div class="piece @(ChessBoard[22].Type) square-22" @onclick="() => Clicked(22)"></div>
+<div class="piece @(ChessBoard[32].Type) square-32" @onclick="() => Clicked(32)"></div>
+<div class="piece @(ChessBoard[42].Type) square-42" @onclick="() => Clicked(42)"></div>
+<div class="piece @(ChessBoard[52].Type) square-52" @onclick="() => Clicked(52)"></div>
+<div class="piece @(ChessBoard[62].Type) square-62" @onclick="() => Clicked(62)"></div>
+<div class="piece @(ChessBoard[72].Type) square-72" @onclick="() => Clicked(72)"></div>
+<div class="piece @(ChessBoard[82].Type) square-82" @onclick="() => Clicked(82)"></div>
+<div class="piece @(ChessBoard[13].Type) square-13" @onclick="() => Clicked(13)"></div>
+<div class="piece @(ChessBoard[23].Type) square-23" @onclick="() => Clicked(23)"></div>
+<div class="piece @(ChessBoard[33].Type) square-33" @onclick="() => Clicked(33)"></div>
+<div class="piece @(ChessBoard[43].Type) square-43" @onclick="() => Clicked(43)"></div>
+<div class="piece @(ChessBoard[53].Type) square-53" @onclick="() => Clicked(53)"></div>
+<div class="piece @(ChessBoard[63].Type) square-63" @onclick="() => Clicked(63)"></div>
+<div class="piece @(ChessBoard[73].Type) square-73" @onclick="() => Clicked(73)"></div>
+<div class="piece @(ChessBoard[83].Type) square-83" @onclick="() => Clicked(83)"></div>
+<div class="piece @(ChessBoard[14].Type) square-14" @onclick="() => Clicked(14)"></div>
+<div class="piece @(ChessBoard[24].Type) square-24" @onclick="() => Clicked(24)"></div>
+<div class="piece @(ChessBoard[34].Type) square-34" @onclick="() => Clicked(34)"></div>
+<div class="piece @(ChessBoard[44].Type) square-44" @onclick="() => Clicked(44)"></div>
+<div class="piece @(ChessBoard[54].Type) square-54" @onclick="() => Clicked(54)"></div>
+<div class="piece @(ChessBoard[64].Type) square-64" @onclick="() => Clicked(64)"></div>
+<div class="piece @(ChessBoard[74].Type) square-74" @onclick="() => Clicked(74)"></div>
+<div class="piece @(ChessBoard[84].Type) square-84" @onclick="() => Clicked(84)"></div>
+<div class="piece @(ChessBoard[15].Type) square-15" @onclick="() => Clicked(15)"></div>
+<div class="piece @(ChessBoard[25].Type) square-25" @onclick="() => Clicked(25)"></div>
+<div class="piece @(ChessBoard[35].Type) square-35" @onclick="() => Clicked(35)"></div>
+<div class="piece @(ChessBoard[45].Type) square-45" @onclick="() => Clicked(45)"></div>
+<div class="piece @(ChessBoard[55].Type) square-55" @onclick="() => Clicked(55)"></div>
+<div class="piece @(ChessBoard[65].Type) square-65" @onclick="() => Clicked(65)"></div>
+<div class="piece @(ChessBoard[75].Type) square-75" @onclick="() => Clicked(75)"></div>
+<div class="piece @(ChessBoard[85].Type) square-85" @onclick="() => Clicked(85)"></div>
+<div class="piece @(ChessBoard[16].Type) square-16" @onclick="() => Clicked(16)"></div>
+<div class="piece @(ChessBoard[26].Type) square-26" @onclick="() => Clicked(26)"></div>
+<div class="piece @(ChessBoard[36].Type) square-36" @onclick="() => Clicked(36)"></div>
+<div class="piece @(ChessBoard[46].Type) square-46" @onclick="() => Clicked(46)"></div>
+<div class="piece @(ChessBoard[56].Type) square-56" @onclick="() => Clicked(56)"></div>
+<div class="piece @(ChessBoard[66].Type) square-66" @onclick="() => Clicked(66)"></div>
+<div class="piece @(ChessBoard[76].Type) square-76" @onclick="() => Clicked(76)"></div>
+<div class="piece @(ChessBoard[86].Type) square-86" @onclick="() => Clicked(86)"></div>
+<div class="piece @(ChessBoard[17].Type) square-17" @onclick="() => Clicked(17)"></div>
+<div class="piece @(ChessBoard[27].Type) square-27" @onclick="() => Clicked(27)"></div>
+<div class="piece @(ChessBoard[37].Type) square-37" @onclick="() => Clicked(37)"></div>
+<div class="piece @(ChessBoard[47].Type) square-47" @onclick="() => Clicked(47)"></div>
+<div class="piece @(ChessBoard[57].Type) square-57" @onclick="() => Clicked(57)"></div>
+<div class="piece @(ChessBoard[67].Type) square-67" @onclick="() => Clicked(67)"></div>
+<div class="piece @(ChessBoard[77].Type) square-77" @onclick="() => Clicked(77)"></div>
+<div class="piece @(ChessBoard[87].Type) square-87" @onclick="() => Clicked(87)"></div>
+<div class="piece @(ChessBoard[18].Type) square-18" @onclick="() => Clicked(18)"></div>
+<div class="piece @(ChessBoard[28].Type) square-28" @onclick="() => Clicked(28)"></div>
+<div class="piece @(ChessBoard[38].Type) square-38" @onclick="() => Clicked(38)"></div>
+<div class="piece @(ChessBoard[48].Type) square-48" @onclick="() => Clicked(48)"></div>
+<div class="piece @(ChessBoard[58].Type) square-58" @onclick="() => Clicked(58)"></div>
+<div class="piece @(ChessBoard[88].Type) square-88" @onclick="() => Clicked(88)"></div>
+<div class="piece @(ChessBoard[78].Type) square-78" @onclick="() => Clicked(78)"></div>
+<div class="piece @(ChessBoard[68].Type) square-68" @onclick="() => Clicked(68)"></div>
+
+
+
+</chess-board>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public string ToUserId { get; set; }
+
+    public bool IsAllowToMove { get; set; } = true;
+    public bool IsMyColorWhite { get; set; }
+    public Piece MovingPiece { get; set; } = new();
+    public int FromSquare { get; set; }
+    public int ToSquare { get; set; }
+    public string HighLightedSquare1 { get; set; } = "";
+    public string HighLightedSquare2 { get; set; } = "";
+    public MoveSignal MoveSignal { get; set; } = new();
+
+    public Dictionary<int, Piece> ChessBoard { get; set; } = new(); // dictionary
+
+    public string Flipped { get; set; } = "";
+    public StateSignal MyState { get; set; } = new()
+    {
+        IsOnline = true
+    };
+
+    public User ToUser { get; set; } = new();
+    public string FromUserId { get; set; }
+    public bool ToUserState { get; set; }
+
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private HubConnection _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+    //todo set mytype == my color
+    // todo flip for black
+    // todo database state update
+        Reset();
+        var claimsPrincipal = (await AuthenticationStateTask).User;
+
+        if (claimsPrincipal.Identity != null && !claimsPrincipal.Identity.IsAuthenticated)
+            _navigationManager.NavigateTo("/");
+
+        FromUserId = (await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser"))?.UserId.ToString();
+
+        if (Convert.ToInt32(ToUserId) > 0)
+            ToUser = await _httpClient.GetFromJsonAsync<User>("profile/getprofile/" + ToUserId);
+
+
+        MyState = new StateSignal
+        {
+            ToUserId = ToUserId,
+            FromUserId = FromUserId,
+            IsOnline = true
+        };
+
+        IsMyColorWhite = int.Parse(FromUserId) == 8;
+        if (IsMyColorWhite)
+        {
+          Flipped = "";
+        }
+        else
+        {
+            Flipped = "flipped";
+        }
+
+
+    // receive part ===============================>
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(_navigationManager.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        _hubConnection.On<StateSignal>("ReceiveStateSignal", async (Signal) =>
+        {
+            if (Signal.ToUserId == FromUserId && Signal.FromUserId == ToUserId)
+            {
+                if (MyState.IsOnline && ToUserState == false &&  Signal.IsOnline)
+                {
+                    await SendState(true);
+                }
+                ToUserState = Signal.IsOnline;
+                StateHasChanged();
+            }
+        });
+
+        await _hubConnection.StartAsync();
+        await _hubConnection.SendAsync("StateSignal", MyState);
+    //receive  move Signal
+        _hubConnection.On<MoveSignal>("ReceiveMoveSignal", (Signal) =>
+        {
+            if (Signal.FromUserId == FromUserId || Signal.ToUserId == FromUserId && Signal.FromUserId == ToUserId)
+            {
+                Move(Signal);
+                StateHasChanged();
+                if (Signal.FromUserId != FromUserId)
+                {
+                    IsAllowToMove = true;
+                }
+            }
+        });
+    //SelectCoordinateSignal
+        _hubConnection.On<SelectCoordinateSignal>("ReceiveSelectCoordinateSignal", (Signal) =>
+        {
+            if (Signal.FromUserId == FromUserId || Signal.ToUserId == FromUserId && Signal.FromUserId == ToUserId)
+            {
+                SelectSquare(Signal.Coordinate,Signal.IsFirstSquare.Value);
+                StateHasChanged();
+            }
+        });
+    }
+
+    private async Task Send()
+    {
+        await SendState(false);
+    }
+
+    private async Task SendState(bool state)
+    {
+        if (!state)
+        {
+            MyState.IsOnline = !MyState.IsOnline;
+        }
+
+        await _hubConnection.SendAsync("StateSignal", MyState);
+    }
+
+
+    private static int ToCoordinate(int x, int y)
+    {
+        return int.Parse($"{x}{y}");
+    }
+
+    public void Reset()
+    {
+        var pieces = Enum.GetValues(typeof(PieceType)).ToDynamicList();
+
+
+        for (var j = 1; j <= 8; j++)
+        {
+            switch (j)
+            {
+                case 1:
+                {
+                    var i = 0;
+                    var k = 3;
+
+                    while (i < 8)
+                    {
+                        if (i < 5)
+                        {
+                            ChessBoard.Add(ToCoordinate(i + 1, j), new WhitePiece(pieces[i]));
+                        }
+                        else
+                        {
+                            ChessBoard.Add(ToCoordinate(i + k, j), new WhitePiece(pieces[i - 5]));
+                            k -= 2;
+                        }
+
+                        i++;
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    for (var i = 1; i <= 8; i++)
+                    {
+                        ChessBoard.Add(ToCoordinate(i, j), new WhitePiece(pieces[5]));
+                    }
+                    break;
+                }
+                case > 2 and < 7:
+                {
+                    for (var i = 1; i <= 8; i++)
+                    {
+                        ChessBoard.Add(ToCoordinate(i, j), new Piece());
+                    }
+                    break;
+                }
+                case 7:
+                {
+                    for (var i = 1; i <= 8; i++)
+                    {
+                        ChessBoard.Add(ToCoordinate(i, j), new BlackPiece(pieces[6]));
+                    }
+                    break;
+                }
+                case 8:
+                {
+                    var i = 0;
+                    var k = 3;
+
+                    while (i < 8)
+                    {
+                        if (i < 5)
+                        {
+                            ChessBoard.Add(ToCoordinate(i + 1, j), new BlackPiece(pieces[i + 7]));
+                        }
+                        else
+                        {
+                            ChessBoard.Add(ToCoordinate(i + k, j), new BlackPiece(pieces[i + 2]));
+                            k -= 2;
+                        }
+
+                        i++;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private void SelectSquare(int coordinate, bool isFirstSquare)
+    {
+        if (isFirstSquare)
+        {
+            HighLightedSquare1 = $"highlight square-{coordinate}";
+            HighLightedSquare2 = "";
+        }
+        
+        else
+        {
+           
+            HighLightedSquare2 = $"highlight square-{coordinate}";
+        }
+
+    }
+
+    private async Task Clicked(int coordinate)
+    {
+        if (IsAllowToMove)
+        {
+            var piece = ChessBoard[coordinate];
+
+            if (piece.Color != IsMyColorWhite)
+            {
+                ToSquare = coordinate;
+                
+            }
+            else
+            {
+                FromSquare = coordinate;
+                MovingPiece = piece;
+                
+            }
+            
+            if (ToSquare != 0 && FromSquare != 0 && MovingPiece.Color == IsMyColorWhite) //&& ToSquare != FromSquare
+            {
+                if (IsMyColorWhite && MovingPiece.Type == PieceType.wp && ToSquare % 10 == 8)
+                {
+                    MovingPiece.Type = PieceType.wq;
+                }
+                else if (MovingPiece.Type == PieceType.bp && ToSquare % 10 == 1)
+                {
+                    MovingPiece.Type = PieceType.bq;
+                }
+
+                Console.WriteLine($"sq={coordinate}");
+                await SendSelectCoordinate(coordinate, false);
+                await SendMove();
+                IsAllowToMove = false;
+            }
+            else
+            {
+                Console.WriteLine($"fq={coordinate}");
+                await SendSelectCoordinate(coordinate, true);
+            }
+        }
+    }
+
+    private void Move(MoveSignal moveSignal)
+    {
+        ChessBoard[moveSignal.ToSquare] = moveSignal.MovingPiece;
+        ChessBoard[moveSignal.FromSquare] = new Piece();
+        ToSquare = 0;
+        FromSquare = 0;
+        MovingPiece = new Piece();
+        
+    }
+
+    private async Task SendMove()
+    {
+        MoveSignal = new MoveSignal(FromSquare, ToSquare, MovingPiece)
+        {
+            ToUserId = ToUserId,
+            FromUserId = FromUserId,
+        };
+
+        await _hubConnection.SendAsync("MoveSignal", MoveSignal);
+    }
+
+    private async Task SendSelectCoordinate(int coordinate, bool isFirstSquare)
+    {
+        var highLightedSquare = new SelectCoordinateSignal(coordinate)
+        {
+            IsFirstSquare = isFirstSquare,
+            ToUserId = ToUserId,
+            FromUserId = FromUserId,
+        };
+
+        await _hubConnection.SendAsync("SelectCoordinateSignal", highLightedSquare);
+    }
+
+
+
+}

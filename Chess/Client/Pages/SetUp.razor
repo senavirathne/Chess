@@ -1,0 +1,88 @@
+@page "/setup"
+@using Microsoft.AspNetCore.WebUtilities
+@using Chess.Client.ViewModels
+@inject ISetUpViewModel _setUpViewModel
+@inject NavigationManager _navigationManager
+
+<h2>
+    <b>Settings</b>
+</h2>
+<hr/>
+
+<div class="col-12">
+    <br>
+    <label>Set Color</label>
+    <RadzenSwitch @bind-value="@_setUpViewModel.IsMyColorWhite" Style="margin-bottom: 20px"/>
+
+    @if (_setUpViewModel.IsMyColorWhite)
+    {
+        <span>&nbsp;</span>
+        <label>I'm White</label>
+    }
+    else
+    {
+        <span>&nbsp;</span>
+        <label>I'm Black</label>
+    }
+    <br>
+    <label>Set Opponent Id</label>
+    <input type="text" required="required" @bind="@_setUpViewModel.OpponentId" id="chkDarkTheme">
+    <br>
+    <label>Set Timer</label>
+    <RadzenSwitch @bind-value="@_setUpViewModel.IsTimerSet" Style="margin-bottom: 20px"/>
+
+    @if (_setUpViewModel.IsTimerSet)
+    {
+        <label>Set Time in Minutes</label>
+        <span>&nbsp;</span>
+        <input type="text" required="required" @bind="@_setUpViewModel.TimeOut">
+        <label>Time is Increment By</label>
+        <span>&nbsp;</span>
+        <input type="text" required="required" @bind="@_setUpViewModel.IncrementTimerBy">
+        <label>Seconds</label>
+    }
+
+
+</div>
+<div class="col-12">
+    <button class="btn btn-primary" @onclick="NavigateToComponent">Start</button>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private void NavigateToComponent()
+    {
+    //todo send colors to db/direct while prompt opponent to accept
+    //todo add change color button before start
+        var myColor = _setUpViewModel.IsMyColorWhite ? "w" : "b";
+        var query = _setUpViewModel.IsTimerSet
+            ? new Dictionary<string, string>
+            {
+                { "color", myColor },
+                { "time", _setUpViewModel.TimeOut },
+                { "increment", _setUpViewModel.IncrementTimerBy }
+                
+            }
+            : new Dictionary<string, string>
+            {
+                { "color", myColor },
+            };
+
+        _navigationManager.NavigateTo(QueryHelpers.AddQueryString($"/board/{_setUpViewModel.OpponentId}", query));
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthenticationStateTask).User;
+
+        if (user.Identity == null || !user.Identity.IsAuthenticated)
+            _navigationManager.NavigateTo("/");
+    }
+
+
+}
+

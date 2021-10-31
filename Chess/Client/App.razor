@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader _assemblyLoader
+
+<CascadingAuthenticationState>
+
+    <Router AppAssembly="@typeof(Program).Assembly"
+            AdditionalAssemblies="_assemblies"
+            OnNavigateAsync="OnNavigation"
+            PreferExactMatches="@true">    
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData"/> @* DefaultLayout="@typeof(MainLayout)"/> *@
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p>Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+     
+</CascadingAuthenticationState>
+
+@code {
+
+    private readonly List<System.Reflection.Assembly> _assemblies = new();//{typeof(ThirdPartyChat).Assembly};
+
+    private async Task OnNavigation(NavigationContext context)
+    {
+        // var thirdPartyChatAssemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { typeof(ThirdPartyChat).Assembly});
+        if (context.Path == "settings") // Url of the page that needs the lazy loaded assembly
+        {
+            var lazyLoadedAssemblies = await _assemblyLoader.LoadAssembliesAsync(new[] { "Radzen.Blazor.dll" });
+            _assemblies.AddRange(lazyLoadedAssemblies);
+        }
+    }
+
+}
