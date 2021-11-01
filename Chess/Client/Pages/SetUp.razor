@@ -1,8 +1,11 @@
 @page "/setup"
 @using Microsoft.AspNetCore.WebUtilities
 @using Chess.Client.ViewModels
+@using Chess.Shared.Models
 @inject ISetUpViewModel _setUpViewModel
 @inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
+@inject HttpClient _httpClient
 
 <h2>
     <b>Settings</b>
@@ -53,18 +56,32 @@
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
-    private void NavigateToComponent()
+    public string MyId { get; set; }
+
+    private async Task NavigateToComponent()
     {
     //todo send colors to db/direct while prompt opponent to accept
     //todo add change color button before start
-        var myColor = _setUpViewModel.IsMyColorWhite ? "w" : "b";
+        var myColor = "";
+        var opponentColor = "";
+        if (_setUpViewModel.IsMyColorWhite)
+        {
+            myColor = "w";
+            opponentColor = "b";
+        }
+        else
+        {
+            myColor = "b";
+            opponentColor = "w";
+        }
+
+
         var query = _setUpViewModel.IsTimerSet
             ? new Dictionary<string, string>
             {
                 { "color", myColor },
                 { "time", _setUpViewModel.TimeOut },
                 { "increment", _setUpViewModel.IncrementTimerBy }
-                
             }
             : new Dictionary<string, string>
             {
@@ -73,6 +90,14 @@
                 { "increment", "0" }
             };
 
+
+        {
+            query["color"] = opponentColor;
+            //todo add https://game-chess.herokuapp.com/ to constants
+            var opponentUrl = QueryHelpers.AddQueryString($"https://game-chess.herokuapp.com/board/{MyId}", query);
+            
+            await _jsRuntime.InvokeVoidAsync("alert", $"Share this URL to Your opponent: {opponentUrl}");
+        }
         _navigationManager.NavigateTo(QueryHelpers.AddQueryString($"/board/{_setUpViewModel.OpponentId}", query));
     }
 
@@ -83,8 +108,10 @@
 
         if (user.Identity == null || !user.Identity.IsAuthenticated)
             _navigationManager.NavigateTo("/");
+        MyId = (await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser"))?.UserId.ToString();
     }
 
 
-}
 
+
+}

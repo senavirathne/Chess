@@ -19,6 +19,9 @@ namespace Chess.Client.ViewModels
         [Required]
         public string IncrementTimerBy { get; set; }
         
+       
+        
+        
         
 
         

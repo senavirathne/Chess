@@ -7,7 +7,6 @@
 @using System.Linq.Dynamic.Core
 @using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager _navigationManager
-@inject HttpClient _http
 @inject IJSRuntime _jsRuntime
 @inject HttpClient _httpClient
 
@@ -194,7 +193,7 @@ else
 
     public TimerSignal TimerState { get; set; } = new();
     
-    public bool IsAllowToMove { get; set; } 
+    public static bool IsAllowToMove { get; set; } 
     public bool IsMyColorWhite { get; set; }
     public bool IsTimerSet { get; set; } 
     public Piece MovingPiece { get; set; } = new();
@@ -223,13 +222,23 @@ else
     public Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     private HubConnection _hubConnection;
+    
+    
+    // [JSInvokable]
+    // public static void DenyToMove()
+    // {
+    //     IsAllowToMove = false;
+    // }
+
 
     protected override async Task OnInitializedAsync()
     {
-    //todo set mytype == my color
-    // todo flip for black
+        
+    
     // todo database state update
-        // todo black should not move first
+        //stop when time is over
+        
+        
         Reset();
         var claimsPrincipal = (await AuthenticationStateTask).User;
 
@@ -258,7 +267,7 @@ else
 
         if (IsTimerSet)
         {
-            TimeOutInSeconds = timeOut * 60;
+            TimeOutInSeconds = timeOut; // * 60;
             var increment = int.Parse(query["increment"].First());
             TimeIncrementBySeconds = increment > 0 ? increment : 3 ;
             Module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/timer.js");
@@ -332,7 +341,11 @@ else
         
     }
 
-    
+    public class HttpContext
+    {
+        public static object Current { get; set; }
+    }
+
 
     // protected override async Task OnAfterRenderAsync(bool firstRender)
     // {

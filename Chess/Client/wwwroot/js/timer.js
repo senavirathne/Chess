@@ -54,9 +54,6 @@ class Timer {
         </div>
         `;
 
-        console.log(this.ID+" is started");
-        console.log(this.ID+"time limit is"+this.TIME_LIMIT);
-        // this.startTimer();
 
     }
 
@@ -73,6 +70,8 @@ class Timer {
     }
     onTimesUp() {
         clearInterval(this.timerInterval);
+        
+        // DotNet.invokeMethod('Chess', 'DenyToMove')
     }
     startTimer() {
         console.log(this.ID+"'s startTimer is started");
@@ -87,6 +86,7 @@ class Timer {
 
             if (this.timeLeft === 0) {
                 this.onTimesUp();
+                window.location.reload(window.confirm("Game Over"));
             }
         }, 1000);
     }
