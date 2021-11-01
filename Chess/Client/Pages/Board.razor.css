@@ -1,326 +1,82 @@
-/*.bold-text{*/
-/*    font-weight: bolder;*/
-/*}*/
-
-/*! CSS Used from: https://www.chess.com/bundles/app/css/base.client.1ffe4257.css */
-.icon-font-component {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-}
-.icon-font-component span {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    speak: none;
-}
-.icon-font-component span:hover {
-    text-decoration: none;
-}
-.icon-font-chess {
-    font-family: Chess;
-}
-a {
-
-    color: inherit;
-    text-decoration: none;
-}
-a {
-    cursor: pointer;
-}
-body:not(.keyboard-navigation-in-use) :focus {
-    outline: 0;
-}
-/*! CSS Used from: https://www.chess.com/bundles/app/css/core.client.fcb4f1f8.css */
-*,
-:after,
-:before {
-    box-sizing: inherit;
-}
-a {
-    color: inherit;
-    text-decoration: none;
-}
-a {
-    cursor: pointer;
-}
-.icon-font-chess.circle-gearwheel:before {
-    content: "\00B7";
-}
-.icon-font-chess.repeat:before {
-    content: "\0066";
-}
-.icon-font-chess.resize:before {
-    content: "\03C0";
-}
-.icon-font-chess {
-    display: inline-block;
-    font-family: Chess;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    font-weight: 400;
-    line-height: 0.85;
-    text-align: center;
-}
-/*! CSS Used from: https://www.chess.com/bundles/app/css/board-layout.client.4164c2fa.css */
-.board-layout-analysis {
-    display: none;
-    height: 220px;
-    left: 0;
-    position: absolute;
-    right: 0;
-}
-.board-layout-main {
-    align-items: flex-end;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-.board-layout-chessboard {
-    height: 0;
-    padding-bottom: 100%;
-    position: relative;
-}
-body.board-layout .board-layout-chessboard,
-body.board-layout .board-layout-main {
-    width: calc(100vh - 32px);
-}
-body.board-layout.outside-coords .board-layout-chessboard,
-body.board-layout.outside-coords .board-layout-main {
-    width: calc(100vh - 57px);
-}
-body.board-layout.with-evaluation .board-layout-chessboard,
-body.board-layout.with-evaluation .board-layout-main {
-    width: calc(100vh - 32px);
-}
-body.board-layout.with-evaluation.outside-coords .board-layout-chessboard,
-body.board-layout.with-evaluation.outside-coords .board-layout-main {
-    width: calc(100vh - 57px);
-}
-@media (min-width: 960px) {
-    body.board-layout .board-layout-main {
-        margin-right: 32px;
-        min-width: 300px;
-    }
-}
-@media (max-width: 959px) {
-    body.board-layout .board-layout-main {
-        margin: auto;
-        max-height: calc(100vh - 72px);
-        max-width: 100%;
-        width: auto;
-    }
-}
-.board-layout-controls {
-    bottom: 0;
-    display: none;
-    position: absolute;
-    right: -32px;
-    top: 0;
-    width: 32px;
-}
-.board-layout-controls:hover .board-layout-icon.icon-font-chess.resize {
-    display: block;
-}
-.board-layout-icon,
-.board-layout-icon.icon-font-chess {
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    align-items: center;
-    /*color: #403d39;*/
-    color: #000000;
-    cursor: pointer;
-    display: flex;
-    font-size: 2.4rem;
-    height: 24px;
-    justify-content: center;
-    margin: -2px 0 0;
-    opacity: 0.5;
-    overflow: hidden;
-    text-shadow: 1px 1px rgba(49, 46, 43, 0.4);
-    width: 32px;
-}
-.board-layout-icon.icon-font-chess.resize,
-.board-layout-icon.resize {
-    bottom: 0;
-    cursor: nwse-resize;
-    display: none;
-    position: absolute;
-}
-@media (min-width: 960px) {
-    .board-layout:not(.double-board) .board-layout-controls {
-        display: block;
-    }
-}
-.board-layout-evaluation {
-    display: none;
-    height: 100%;
-    position: absolute;
-    transform: translateX(-30px);
-    width: 20px;
-}
-.board-layout-evaluation:hover {
-    z-index: 9000;
-}
-body.board-layout.with-evaluation .board-layout-evaluation {
-    display: flex;
-}
-body.board-layout.with-evaluation.outside-coords .board-layout-evaluation {
-    transform: translateX(-60px);
-}
-body.board-layout.with-evaluation.outside-coords .board-layout-main {
-    padding-left: 30px;
-}
-.board-layout-player {
-    display: none;
-    height: 40px;
-    width: 100%;
-}
-/*! CSS Used from: https://www.chess.com/bundles/app/css/board-default.client.964f348e.css */
-.coordinates {
-    font-weight: 600;
-    height: 100%;
-    line-height: 1;
-    top: 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    width: 100%;
-}
-.coordinates {
-    pointer-events: none;
-    position: absolute;
-}
+/*! CSS Used from: https://www.chess.com/bundles/app/css/base.client.0413f733.css */
+body:not(.keyboard-navigation-in-use) :focus{outline:0;}
+/*! CSS Used from: https://www.chess.com/bundles/app/css/core.client.d66d5513.css */
+*,:after,:before{box-sizing:inherit;}
+/*! CSS Used from: https://www.chess.com/bundles/app/css/board-default.client.91244ce9.css */
+.coordinates{font-weight:600;height:100%;line-height:1;top:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:100%;}
+.coordinates{pointer-events:none;position:absolute;}
 /*! CSS Used from: Embedded */
-#board-board1632857578401 {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/boards/green/150.png);
-}
-#board-board1632857578401 .piece.wp {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wp.png);
-}
-#board-board1632857578401 .piece.wn {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wn.png);
-}
-#board-board1632857578401 .piece.wb {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wb.png);
-}
-#board-board1632857578401 .piece.wr {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wr.png);
-}
-#board-board1632857578401 .piece.wq {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wq.png);
-}
-#board-board1632857578401 .piece.wk {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wk.png);
-}
-#board-board1632857578401 .piece.bp {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bp.png);
-}
-#board-board1632857578401 .piece.bn {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bn.png);
-}
-#board-board1632857578401 .piece.bb {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bb.png);
-}
-#board-board1632857578401 .piece.br {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/br.png);
-}
-#board-board1632857578401 .piece.bq {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bq.png);
-}
-#board-board1632857578401 .piece.bk {
-    background-image: url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bk.png);
-}
-#board-board1632857578401 .piece.mt {
-
-}
+#board-board1632857578401{background-image:url(https://images.chesscomfiles.com/chess-themes/boards/green/150.png);}
+#board-board1632857578401 .piece.wp{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wp.png);}
+#board-board1632857578401 .piece.wn{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wn.png);}
+#board-board1632857578401 .piece.wb{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wb.png);}
+#board-board1632857578401 .piece.wr{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wr.png);}
+#board-board1632857578401 .piece.wq{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wq.png);}
+#board-board1632857578401 .piece.wk{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wk.png);}
+#board-board1632857578401 .piece.bp{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bp.png);}
+#board-board1632857578401 .piece.bn{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bn.png);}
+#board-board1632857578401 .piece.bb{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bb.png);}
+#board-board1632857578401 .piece.br{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/br.png);}
+#board-board1632857578401 .piece.bq{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bq.png);}
+#board-board1632857578401 .piece.bk{background-image:url(https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bk.png);}
 /*! CSS Used from: Embedded ; media=all */
-@media all {
-    .cls-1 {
-        opacity: 0.3;
-    }
-    .cls-2 {
-        fill: #f8f8f8;
-    }
-    .cls-3 {
-        fill: #8a8886;
-    }
+@media all{
+    .cls-1{opacity:0.3;}
+    .cls-2{fill:#f8f8f8;}
+    .cls-3{fill:#8a8886;}
 }
-/*! CSS Used from: https://betacssjs.chesscomfiles.com/bundles/app/css/analysis.client.43d942df.css */
-
-
-/*! CSS Used fontfaces */
-@font-face {
-    font-family: Chess;
-    src: url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.1e617619.eot);
-    src: url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.1e617619.eot#iefix)
-    format("embedded-opentype"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.c11b4e6c.woff2)
-    format("woff2"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.7b6033b7.woff)
-    format("woff"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.f9b2e034.ttf)
-    format("truetype"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.ed4e6331.svg#ChessGlyphRegular)
-    format("svg");
-}
-@font-face {
-    font-family: Chess;
-    src: url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.1e617619.eot);
-    src: url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.1e617619.eot#iefix)
-    format("embedded-opentype"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.c11b4e6c.woff2)
-    format("woff2"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.7b6033b7.woff)
-    format("woff"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.f9b2e034.ttf)
-    format("truetype"),
-    url(https://www.chess.com/bundles/web/fonts/chessglyph-regular.ed4e6331.svg#ChessGlyphRegular)
-    format("svg");
-}
-/*! CSS Used from: https://www.chess.com/bundles/app/css/base.client.2cf14f01.css */
-body:not(.keyboard-navigation-in-use) :focus {
-    outline: 0;
-}
-/*! CSS Used from: https://www.chess.com/bundles/app/css/core.client.ad7997f2.css */
-*,
-:after,
-:before {
-    box-sizing: inherit;
-}
-/*! CSS Used from: Embedded */
-.highlight {
-    background-color: #ffff00;
-}
-/*! CSS Used from: https://betacssjs.chesscomfiles.com/bundles/app/css/analysis.client.8536ec26.css */
-.highlight {
-    height: 12.5%;
-    left: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    width: 12.5%;
-}
-.highlight {
-    height: 12.5%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 12.5%;
-}
-.square-42 {
-    transform: translate(300%, 600%);
-}
-/*.grid-container {*/
-/*    display: grid;*/
-/*    grid-template-columns: 160px auto;*/
-/*    grid-gap: 0;*/
-/*    padding: 0;*/
-/*}*/
-/*.grid-container > div {*/
-/*    text-align: center;*/
-/*    font-size: 30px;*/
-/*}*/
+/*! CSS Used from: https://betacssjs.chesscomfiles.com/bundles/app/css/analysis.client.620ae3e8.css */
+.board-images{z-index:10;position:absolute;-ms-overflow-style:none;}
+.board-images ::-webkit-scrollbar{display:none;}
+.board-images__title{white-space:nowrap;position:absolute;opacity:.8;font-size:small;pointer-events:none;left:0;right:0;top:0;padding:.5rem 0;text-align:center;}
+.board-images__title,.board-images__window{width:100%;background-color:#fff;border-radius:1.25rem;}
+.board-images__window{height:100%;padding:3%;box-shadow:0 7px 9.5px .5px rgba(0,0,0,.2);overflow:scroll;scrollbar-width:none;}
+.board-images__window-body>div:not(:last-child){border-bottom:1px solid #d3d3d3;}
+.board-images__hover-container{position:relative;}
+.board-images__effects-container{width:100%;}
+.board-images__effect{border:2px solid transparent;border-radius:3px;cursor:pointer;padding:3%;display:inline-flex;}
+.board-images__image{width:100%;cursor:pointer;}
+.board-images__close-button{position:absolute;width:15%;height:0;padding-bottom:15%;top:0;pointer-events:none;}
+.board-images__close-button>div{pointer-events:auto;cursor:pointer;position:absolute;height:100%;width:100%;top:-50%;}
+.board-images:not(.horizontal-overflow) .board-images__close-button{left:0;}
+.board-images:not(.horizontal-overflow) .board-images__close-button>div{left:-50%;}
+.board{background-repeat:no-repeat;background-size:100%;border-radius:3px;height:100%;overflow:initial;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:100%;}
+.piece{background-size:100%;cursor:pointer;cursor:grab;cursor:-webkit-grab;height:12.5%;left:0;overflow:hidden;position:absolute;top:0;touch-action:none;width:12.5%;will-change:transform;}
+.square-11{transform:translateY(700%);}
+.square-21{transform:translate(100%,700%);}
+.square-31{transform:translate(200%,700%);}
+.square-41{transform:translate(300%,700%);}
+.square-51{transform:translate(400%,700%);}
+.square-61{transform:translate(500%,700%);}
+.square-71{transform:translate(600%,700%);}
+.square-81{transform:translate(700%,700%);}
+.square-12{transform:translateY(600%);}
+.square-22{transform:translate(100%,600%);}
+.square-32{transform:translate(200%,600%);}
+.square-42{transform:translate(300%,600%);}
+.square-52{transform:translate(400%,600%);}
+.square-62{transform:translate(500%,600%);}
+.square-72{transform:translate(600%,600%);}
+.square-82{transform:translate(700%,600%);}
+.square-17{transform:translateY(100%);}
+.square-27{transform:translate(100%,100%);}
+.square-37{transform:translate(200%,100%);}
+.square-47{transform:translate(300%,100%);}
+.square-57{transform:translate(400%,100%);}
+.square-67{transform:translate(500%,100%);}
+.square-77{transform:translate(600%,100%);}
+.square-87{transform:translate(700%,100%);}
+.square-18{transform:translate(0);}
+.square-28{transform:translate(100%);}
+.square-38{transform:translate(200%);}
+.square-48{transform:translate(300%);}
+.square-58{transform:translate(400%);}
+.square-68{transform:translate(500%);}
+.square-78{transform:translate(600%);}
+.square-88{transform:translate(700%);}
+.board .arrows{height:100%;left:0;pointer-events:none;position:absolute;top:0;width:100%;}
+.coordinate-grey{fill:hsla(0,0%,100%,.5);font-weight:600;}
+.coordinates{left:0;position:absolute;top:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+.outside{position:absolute;transform:translate(-5%,4%);}
+.outside text{font-size:clamp(.1rem,.25rem,.25rem);}
+chess-board.board{background-size:100%;display:block;height:0;padding-bottom:100%;width:100%;}
