@@ -1,15 +1,14 @@
 namespace Chess.Shared.Models
 {
-    public class StateSignal : ISignal
+    public class TimerSignal : ISignal
     {
         public string ToUserId { get; set; }
         public string FromUserId { get; set; }
-        public bool IsOnline { get; set; }
+        public bool IsTimerRunning { get; set; }
 
-        public StateSignal()
+        public TimerSignal()
         {
-            IsOnline = true;
+            IsTimerRunning = false;
         }
-       
     }
 }

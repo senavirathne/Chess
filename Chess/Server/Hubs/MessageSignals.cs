@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Chess.Shared.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -8,11 +9,11 @@ namespace Chess.Server.Hubs
 
     public class SignalHub : Hub
     {
-        public async Task StateSignal(StateSignal Signal)
+        public async Task StateSignal(StateSignal signal)
         {
             
-            var users = new[] { Signal.ToUserId, Signal.FromUserId };
-            await Clients.Users(users).SendAsync("ReceiveStateSignal", Signal);
+            var users = new[] { signal.ToUserId, signal.FromUserId };
+            await Clients.Users(users).SendAsync("ReceiveStateSignal", signal);
            
         }
         public async Task MoveSignal(MoveSignal moveSignal)
@@ -21,11 +22,18 @@ namespace Chess.Server.Hubs
             await Clients.Users(users).SendAsync("ReceiveMoveSignal", moveSignal);
             
         }
-        public async Task SelectCoordinateSignal(SelectCoordinateSignal Signal)
+        public async Task SelectCoordinateSignal(SelectCoordinateSignal signal)
         {
-            var users = new[] { Signal.ToUserId, Signal.FromUserId };
-            await Clients.Users(users).SendAsync("ReceiveSelectCoordinateSignal", Signal);
+            var users = new[] { signal.ToUserId, signal.FromUserId };
+            await Clients.Users(users).SendAsync("ReceiveSelectCoordinateSignal", signal);
             
+        }
+        public async Task TimerSignal(TimerSignal signal)
+        {
+            
+            var users = new[] { signal.ToUserId, signal.FromUserId };
+            await Clients.Users(users).SendAsync("ReceiveTimerSignal", signal);
+           
         }
     }
 }

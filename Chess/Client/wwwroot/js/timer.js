@@ -1,6 +1,6 @@
 class Timer {
     constructor(Id) {
-        this.TIME_LIMIT = 5;
+        this.TIME_LIMIT = 0;
         this.INCREMENT_FACTOR = 3;
         this.ID = Id
         this.base_timer_path_remaining = Id +"-timer-path-remaining";
@@ -49,8 +49,8 @@ class Timer {
             </g>
           </svg>
           <span id=${this.base_timer_label} class="base-timer__label">${this.formatTime(
-                    this.timeLeft)
-                }</span>
+            this.timeLeft)
+        }</span>
         </div>
         `;
 
@@ -62,7 +62,13 @@ class Timer {
 
     pause() {
         this.onTimesUp();
+        this.timeLeft += this.INCREMENT_FACTOR;
         this.timePassed -= this.INCREMENT_FACTOR;
+        document.getElementById(this.base_timer_label).innerHTML = this.formatTime(
+            this.timeLeft);
+
+        this.setCircleDasharray();
+        this.setRemainingPathColor(this.timeLeft);
         console.log(this.ID+" paused method invoked");
     }
     onTimesUp() {
@@ -96,7 +102,7 @@ class Timer {
     }
     setRemainingPathColor(timeLeft) {
         const {alert, warning, info} = this.COLOR_CODES;
-        
+
         if (timeLeft <= alert.threshold) {
             document.getElementById(this.base_timer_path_remaining).classList.remove(warning.color);
             document.getElementById(this.base_timer_path_remaining).classList.add(alert.color);
@@ -120,21 +126,39 @@ class Timer {
 
 }
 
-const WhiteTimer = new Timer("BlackTimer");
-const BlackTimer = new Timer("WhiteTimer");
+const BlackTimer = new Timer("BlackTimer");
+const WhiteTimer = new Timer("WhiteTimer");
+
+
 export function initialize(TimeOut,Increment){
     WhiteTimer.TIME_LIMIT = TimeOut;
     WhiteTimer.INCREMENT_FACTOR = Increment;
     WhiteTimer.Initiate();
-    
-    
+
+    WhiteTimer.timeLeft = TimeOut;
+    document.getElementById(WhiteTimer.base_timer_label).innerHTML = WhiteTimer.formatTime(
+        WhiteTimer.timeLeft);
+
+    WhiteTimer.setCircleDasharray();
+    WhiteTimer.setRemainingPathColor(WhiteTimer.timeLeft);
+
+
     BlackTimer.TIME_LIMIT = TimeOut;
     BlackTimer.INCREMENT_FACTOR = Increment;
     BlackTimer.Initiate();
-   
- 
+    BlackTimer.timeLeft = TimeOut;
+    document.getElementById(BlackTimer.base_timer_label).innerHTML = BlackTimer.formatTime(
+        BlackTimer.timeLeft);
+
+    BlackTimer.setCircleDasharray();
+    BlackTimer.setRemainingPathColor(BlackTimer.timeLeft);
+
+
 }
-export function pause(ID){
+export function startTimer(){
+    WhiteTimer.startTimer();
+}
+export function pauseTimer(ID){
     if (ID === "WhiteTimer"){
         WhiteTimer.pause();
         BlackTimer.startTimer();
@@ -144,4 +168,4 @@ export function pause(ID){
     }
 
 }
- 
+// initialize(15,5);

@@ -69,6 +69,8 @@
             : new Dictionary<string, string>
             {
                 { "color", myColor },
+                { "time", "0" },
+                { "increment", "0" }
             };
 
         _navigationManager.NavigateTo(QueryHelpers.AddQueryString($"/board/{_setUpViewModel.OpponentId}", query));

@@ -165,7 +165,13 @@ else
 </chess-board>
 
 </div>
-    <div id=@(IsMyColorWhite ? "WhiteTimer":"BlackTimer")></div>
+    <div id=@(IsMyColorWhite ? "WhiteTimer" : "BlackTimer")>
+        @if (!TimerState.IsTimerRunning && IsMyColorWhite)
+        {
+            <button class="btn btn-primary" @onclick="StartTimer">Start Game</button>
+        }
+    </div>
+    
     
 
 </div>
@@ -186,22 +192,24 @@ else
     [Parameter]
     public string ToUserId { get; set; }
 
-    public bool IsAllowToMove { get; set; } = true;
+    public TimerSignal TimerState { get; set; } = new();
+    
+    public bool IsAllowToMove { get; set; } 
     public bool IsMyColorWhite { get; set; }
+    public bool IsTimerSet { get; set; } 
     public Piece MovingPiece { get; set; } = new();
     public int FromSquare { get; set; }
     public int ToSquare { get; set; }
     public string HighLightedSquare1 { get; set; } = "";
     public string HighLightedSquare2 { get; set; } = "";
     public MoveSignal MoveSignal { get; set; } = new();
+    public IJSObjectReference Module { get; set; } 
 
     public Dictionary<int, Piece> ChessBoard { get; set; } = new(); // dictionary
 
+
+    public StateSignal MyState { get; set; } = new();
     
-    public StateSignal MyState { get; set; } = new()
-    {
-        IsOnline = true
-    };
 
     public int TimeOutInSeconds { get; set; }
     public int TimeIncrementBySeconds { get; set; }
@@ -244,14 +252,23 @@ else
         // IsMyColorWhite = int.Parse(FromUserId) == 8;
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
-        IsMyColorWhite = query["color"] == "w";
+        IsMyColorWhite = query["color"].First() == "w";
+        var timeOut = int.Parse(query["time"].First());
+        IsTimerSet = timeOut > 0;
 
-        TimeOutInSeconds = query.TryGetValue("time", out var time) ? int.Parse(time.First()) * 60 : 0;
-        TimeIncrementBySeconds = query.TryGetValue("increment", out var incrementBy) ? int.Parse(incrementBy.First()) : 0;
-        
-        await RunTimer(); 
-
-
+        if (IsTimerSet)
+        {
+            TimeOutInSeconds = timeOut * 60;
+            var increment = int.Parse(query["increment"].First());
+            TimeIncrementBySeconds = increment > 0 ? increment : 3 ;
+            Module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/timer.js");
+            await RunTimer(); 
+        }
+        {
+            TimeOutInSeconds = 0;
+            TimeIncrementBySeconds = 0;
+        }
+    
     // receive part ===============================>
        
         _hubConnection = new HubConnectionBuilder()
@@ -278,7 +295,10 @@ else
         {
             if (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId)
             {
-                await PauseTimer(signal.MovingPiece.Color.Value); // move signal never got empty piece
+                if (IsTimerSet)
+                {
+                    await PauseTimer(signal.MovingPiece.Color.Value); // move signal never got empty piece
+                }
                 Move(signal);
                 
                 StateHasChanged();
@@ -297,7 +317,22 @@ else
                 StateHasChanged();
             }
         });
+        _hubConnection.On<TimerSignal>("ReceiveTimerSignal", async (signal) =>
+        {
+            if (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId)
+            {
+                
+                await Module.InvokeVoidAsync("startTimer");
+                TimerState.IsTimerRunning = signal.IsTimerRunning;
+                IsAllowToMove = IsMyColorWhite;
+                StateHasChanged();
+            }
+        });
+        
+        
     }
+
+    
 
     // protected override async Task OnAfterRenderAsync(bool firstRender)
     // {
@@ -500,16 +535,31 @@ else
     }
     private async Task RunTimer()
     {
-        var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import","./js/timer.js");
-        await module.InvokeVoidAsync("initialize", TimeOutInSeconds,TimeIncrementBySeconds,"WhiteTimer");
+        // var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import","./js/timer.js");
+         await Module.InvokeVoidAsync("initialize", TimeOutInSeconds,TimeIncrementBySeconds);
        
     }
     private async Task PauseTimer(bool isPieceColorWhite)
     {
         var id = isPieceColorWhite ? "WhiteTimer" : "BlackTimer";
-        var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import","./js/timer.js");
-        await module.InvokeVoidAsync("pause",id);
+        await Module.InvokeVoidAsync("pauseTimer",id);
+       
     }
+    private async Task StartTimer()
+    {
+        var timerState = new TimerSignal()
+        {
+            ToUserId = ToUserId,
+            FromUserId = FromUserId,
+            IsTimerRunning = true
+        };
+        await _hubConnection.SendAsync("TimerSignal", timerState);
+        
+        
+    }
+
+    
+
 
 
 
