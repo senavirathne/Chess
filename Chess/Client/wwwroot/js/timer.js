@@ -1,6 +1,6 @@
 class Timer {
     constructor(Id) {
-        this.TIME_LIMIT = 0;
+        this.TIME_LIMIT = 20;
         this.INCREMENT_FACTOR = 3;
         this.ID = Id
         this.base_timer_path_remaining = Id +"-timer-path-remaining";
@@ -54,6 +54,7 @@ class Timer {
         </div>
         `;
 
+        
 
     }
 
@@ -70,8 +71,6 @@ class Timer {
     }
     onTimesUp() {
         clearInterval(this.timerInterval);
-        
-        // DotNet.invokeMethod('Chess', 'DenyToMove')
     }
     startTimer() {
         console.log(this.ID+"'s startTimer is started");
@@ -120,31 +119,58 @@ class Timer {
             this.calculateTimeFraction() * this.FULL_DASH_ARRAY).toFixed(0)} 283`;
         document.getElementById(this.base_timer_path_remaining).setAttribute("stroke-dasharray", circleDasharray);
     }
-    
+
 
 
 
 }
 
-const BlackTimer = new Timer("BlackTimer");
-const WhiteTimer = new Timer("WhiteTimer");
-
-
+let BlackTimer = new Timer("BlackTimer");
+let WhiteTimer = new Timer("WhiteTimer");
 export function initialize(TimeOut,Increment){
+    
     WhiteTimer.TIME_LIMIT = TimeOut;
     WhiteTimer.INCREMENT_FACTOR = Increment;
-    WhiteTimer.Initiate();
+    WhiteTimer.COLOR_CODES = {
+        info: {
+            color: "green"
+        },
 
+        warning: {
+            color: "orange",
+            threshold: TimeOut / 2
+        },
+
+        alert: {
+            color: "red",
+            threshold: TimeOut / 4
+        }
+    };
+    WhiteTimer.Initiate();
     WhiteTimer.timeLeft = TimeOut;
     document.getElementById(WhiteTimer.base_timer_label).innerHTML = WhiteTimer.formatTime(
         WhiteTimer.timeLeft);
-
     WhiteTimer.setCircleDasharray();
     WhiteTimer.setRemainingPathColor(WhiteTimer.timeLeft);
 
 
     BlackTimer.TIME_LIMIT = TimeOut;
     BlackTimer.INCREMENT_FACTOR = Increment;
+    BlackTimer.COLOR_CODES = {
+        info: {
+            color: "green"
+        },
+
+        warning: {
+            color: "orange",
+            threshold: TimeOut / 2
+        },
+
+        alert: {
+            color: "red",
+            threshold: TimeOut / 4
+        }
+    };
     BlackTimer.Initiate();
     BlackTimer.timeLeft = TimeOut;
     document.getElementById(BlackTimer.base_timer_label).innerHTML = BlackTimer.formatTime(
