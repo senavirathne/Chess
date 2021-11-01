@@ -43,40 +43,74 @@ body:not(.keyboard-navigation-in-use) :focus{outline:0;}
 .board{background-repeat:no-repeat;background-size:100%;border-radius:3px;height:100%;overflow:initial;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:100%;}
 .piece{background-size:100%;cursor:pointer;cursor:grab;cursor:-webkit-grab;height:12.5%;left:0;overflow:hidden;position:absolute;top:0;touch-action:none;width:12.5%;will-change:transform;}
 .square-11{transform:translateY(700%);}
+.flipped .square-11{transform:translate(700%);}
 .square-21{transform:translate(100%,700%);}
+.flipped .square-21{transform:translate(600%);}
 .square-31{transform:translate(200%,700%);}
+.flipped .square-31{transform:translate(500%);}
 .square-41{transform:translate(300%,700%);}
+.flipped .square-41{transform:translate(400%);}
 .square-51{transform:translate(400%,700%);}
+.flipped .square-51{transform:translate(300%);}
 .square-61{transform:translate(500%,700%);}
+.flipped .square-61{transform:translate(200%);}
 .square-71{transform:translate(600%,700%);}
+.flipped .square-71{transform:translate(100%);}
 .square-81{transform:translate(700%,700%);}
+.flipped .square-81{transform:translate(0);}
 .square-12{transform:translateY(600%);}
+.flipped .square-12{transform:translate(700%,100%);}
 .square-22{transform:translate(100%,600%);}
+.flipped .square-22{transform:translate(600%,100%);}
 .square-32{transform:translate(200%,600%);}
+.flipped .square-32{transform:translate(500%,100%);}
 .square-42{transform:translate(300%,600%);}
+.flipped .square-42{transform:translate(400%,100%);}
 .square-52{transform:translate(400%,600%);}
+.flipped .square-52{transform:translate(300%,100%);}
 .square-62{transform:translate(500%,600%);}
+.flipped .square-62{transform:translate(200%,100%);}
 .square-72{transform:translate(600%,600%);}
+.flipped .square-72{transform:translate(100%,100%);}
 .square-82{transform:translate(700%,600%);}
+.flipped .square-82{transform:translateY(100%);}
 .square-17{transform:translateY(100%);}
+.flipped .square-17{transform:translate(700%,600%);}
 .square-27{transform:translate(100%,100%);}
+.flipped .square-27{transform:translate(600%,600%);}
 .square-37{transform:translate(200%,100%);}
+.flipped .square-37{transform:translate(500%,600%);}
 .square-47{transform:translate(300%,100%);}
+.flipped .square-47{transform:translate(400%,600%);}
 .square-57{transform:translate(400%,100%);}
+.flipped .square-57{transform:translate(300%,600%);}
 .square-67{transform:translate(500%,100%);}
+.flipped .square-67{transform:translate(200%,600%);}
 .square-77{transform:translate(600%,100%);}
+.flipped .square-77{transform:translate(100%,600%);}
 .square-87{transform:translate(700%,100%);}
+.flipped .square-87{transform:translateY(600%);}
 .square-18{transform:translate(0);}
+.flipped .square-18{transform:translate(700%,700%);}
 .square-28{transform:translate(100%);}
+.flipped .square-28{transform:translate(600%,700%);}
 .square-38{transform:translate(200%);}
+.flipped .square-38{transform:translate(500%,700%);}
 .square-48{transform:translate(300%);}
+.flipped .square-48{transform:translate(400%,700%);}
 .square-58{transform:translate(400%);}
+.flipped .square-58{transform:translate(300%,700%);}
 .square-68{transform:translate(500%);}
+.flipped .square-68{transform:translate(200%,700%);}
 .square-78{transform:translate(600%);}
+.flipped .square-78{transform:translate(100%,700%);}
 .square-88{transform:translate(700%);}
+.flipped .square-88{transform:translateY(700%);}
 .board .arrows{height:100%;left:0;pointer-events:none;position:absolute;top:0;width:100%;}
+.board.flipped .arrows{transform:scale(-1);}
 .coordinate-grey{fill:hsla(0,0%,100%,.5);font-weight:600;}
 .coordinates{left:0;position:absolute;top:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 .outside{position:absolute;transform:translate(-5%,4%);}
 .outside text{font-size:clamp(.1rem,.25rem,.25rem);}
 chess-board.board{background-size:100%;display:block;height:0;padding-bottom:100%;width:100%;}
+chess-board.board.flipped .piece{left:0;}
