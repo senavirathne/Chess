@@ -79,25 +79,24 @@
         var query = _setUpViewModel.IsTimerSet
             ? new Dictionary<string, string>
             {
-                { "color", myColor },
+                { "color",opponentColor },
                 { "time", _setUpViewModel.TimeOut },
                 { "increment", _setUpViewModel.IncrementTimerBy }
             }
             : new Dictionary<string, string>
             {
-                { "color", myColor },
+                { "color", opponentColor },
                 { "time", "0" },
                 { "increment", "0" }
             };
-
-
-        {
-            query["color"] = opponentColor;
-            //todo add https://game-chess.herokuapp.com/ to constants
-            var opponentUrl = QueryHelpers.AddQueryString($"https://game-chess.herokuapp.com/board/{MyId}", query);
-            
-            await _jsRuntime.InvokeVoidAsync("alert", $"Share this URL to Your opponent: {opponentUrl}");
-        }
+        
+        
+        
+        //todo add https://game-chess.herokuapp.com/ to constants
+        var opponentUrl = QueryHelpers.AddQueryString($"https://game-chess.herokuapp.com/board/{MyId}", query);
+        
+        await _jsRuntime.InvokeVoidAsync("alert", $"Share this URL to Your opponent: {opponentUrl}");
+        query["color"] = myColor;
         _navigationManager.NavigateTo(QueryHelpers.AddQueryString($"/board/{_setUpViewModel.OpponentId}", query));
     }
 
