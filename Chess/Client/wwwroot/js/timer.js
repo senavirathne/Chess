@@ -131,19 +131,19 @@ if (params.has('color'))
     const color = params.get('color')
     if (color === 'w')
     {
-        document.getElementById("W").id = "WhiteTimer";
-        document.getElementById("B").id = "BlackTimer";
+        document.getElementById("W").id = "W";
+        document.getElementById("B").id = "B";
     }else if (color === 'b')
     {
-        document.getElementById("W").id = "BlackTimer";
-        document.getElementById("B").id = "WhiteTimer";
+        document.getElementById("W").id = "B";
+        document.getElementById("B").id = "W";
     }
 
 }
 
 
-let BlackTimer = new Timer("BlackTimer");
-let WhiteTimer = new Timer("WhiteTimer");
+let BlackTimer = new Timer("B");
+let WhiteTimer = new Timer("W");
 export function initialize(TimeOut,Increment){
     
     WhiteTimer.TIME_LIMIT = TimeOut;
