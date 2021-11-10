@@ -41,7 +41,7 @@ body:not(.keyboard-navigation-in-use) :focus{outline:0;}
 .board-images:not(.horizontal-overflow) .board-images__close-button{left:0;}
 .board-images:not(.horizontal-overflow) .board-images__close-button>div{left:-50%;}
 .board{background-repeat:no-repeat;background-size:100%;border-radius:3px;height:100%;overflow:initial;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:100%;}
-.piece{background-size:100%;cursor:pointer;cursor:grab;cursor:-webkit-grab;height:12.5%;left:0;overflow:hidden;position:absolute;top:0;touch-action:none;width:12.5%;will-change:transform;}
+.piece{background-size:100%;cursor:pointer;cursor:grab;height:12.5%;left:0;overflow:hidden;position:absolute;top:0;touch-action:none;width:12.5%;will-change:transform;}
 .square-11{transform:translateY(700%);}
 .flipped .square-11{transform:translate(700%);}
 .square-21{transform:translate(100%,700%);}
@@ -74,6 +74,269 @@ body:not(.keyboard-navigation-in-use) :focus{outline:0;}
 .flipped .square-72{transform:translate(100%,100%);}
 .square-82{transform:translate(700%,600%);}
 .flipped .square-82{transform:translateY(100%);}
+
+.square-13{
+    transform:translateY(500%)
+}
+
+.flipped .square-13{
+    transform:translate(700%,200%)
+}
+
+.square-23{
+    transform:translate(100%,500%)
+}
+
+.flipped .square-23{
+    transform:translate(600%,200%)
+}
+
+.square-33{
+    transform:translate(200%,500%)
+}
+
+.flipped .square-33{
+    transform:translate(500%,200%)
+}
+
+.square-43{
+    transform:translate(300%,500%)
+}
+
+.flipped .square-43{
+    transform:translate(400%,200%)
+}
+
+.square-53{
+    transform:translate(400%,500%)
+}
+
+.flipped .square-53{
+    transform:translate(300%,200%)
+}
+
+.square-63{
+    transform:translate(500%,500%)
+}
+
+.flipped .square-63{
+    transform:translate(200%,200%)
+}
+
+.square-73{
+    transform:translate(600%,500%)
+}
+
+.flipped .square-73{
+    transform:translate(100%,200%)
+}
+
+.square-83{
+    transform:translate(700%,500%)
+}
+
+.flipped .square-83{
+    transform:translateY(200%)
+}
+
+.square-14{
+    transform:translateY(400%)
+}
+
+.flipped .square-14{
+    transform:translate(700%,300%)
+}
+
+.square-24{
+    transform:translate(100%,400%)
+}
+
+.flipped .square-24{
+    transform:translate(600%,300%)
+}
+
+.square-34{
+    transform:translate(200%,400%)
+}
+
+.flipped .square-34{
+    transform:translate(500%,300%)
+}
+
+.square-44{
+    transform:translate(300%,400%)
+}
+
+.flipped .square-44{
+    transform:translate(400%,300%)
+}
+
+.square-54{
+    transform:translate(400%,400%)
+}
+
+.flipped .square-54{
+    transform:translate(300%,300%)
+}
+
+.square-64{
+    transform:translate(500%,400%)
+}
+
+.flipped .square-64{
+    transform:translate(200%,300%)
+}
+
+.square-74{
+    transform:translate(600%,400%)
+}
+
+.flipped .square-74{
+    transform:translate(100%,300%)
+}
+
+.square-84{
+    transform:translate(700%,400%)
+}
+
+.flipped .square-84{
+    transform:translateY(300%)
+}
+
+.square-15{
+    transform:translateY(300%)
+}
+
+.flipped .square-15{
+    transform:translate(700%,400%)
+}
+
+.square-25{
+    transform:translate(100%,300%)
+}
+
+.flipped .square-25{
+    transform:translate(600%,400%)
+}
+
+.square-35{
+    transform:translate(200%,300%)
+}
+
+.flipped .square-35{
+    transform:translate(500%,400%)
+}
+
+.square-45{
+    transform:translate(300%,300%)
+}
+
+.flipped .square-45{
+    transform:translate(400%,400%)
+}
+
+.square-55{
+    transform:translate(400%,300%)
+}
+
+.flipped .square-55{
+    transform:translate(300%,400%)
+}
+
+.square-65{
+    transform:translate(500%,300%)
+}
+
+.flipped .square-65{
+    transform:translate(200%,400%)
+}
+
+.square-75{
+    transform:translate(600%,300%)
+}
+
+.flipped .square-75{
+    transform:translate(100%,400%)
+}
+
+.square-85{
+    transform:translate(700%,300%)
+}
+
+.flipped .square-85{
+    transform:translateY(400%)
+}
+
+.square-16{
+    transform:translateY(200%)
+}
+
+.flipped .square-16{
+    transform:translate(700%,500%)
+}
+
+.square-26{
+    transform:translate(100%,200%)
+}
+
+.flipped .square-26{
+    transform:translate(600%,500%)
+}
+
+.square-36{
+    transform:translate(200%,200%)
+}
+
+.flipped .square-36{
+    transform:translate(500%,500%)
+}
+
+.square-46{
+    transform:translate(300%,200%)
+}
+
+.flipped .square-46{
+    transform:translate(400%,500%)
+}
+
+.square-56{
+    transform:translate(400%,200%)
+}
+
+.flipped .square-56{
+    transform:translate(300%,500%)
+}
+
+.square-66{
+    transform:translate(500%,200%)
+}
+
+.flipped .square-66{
+    transform:translate(200%,500%)
+}
+
+.square-76{
+    transform:translate(600%,200%)
+}
+
+.flipped .square-76{
+    transform:translate(100%,500%)
+}
+
+.square-86{
+    transform:translate(700%,200%)
+}
+
+.flipped .square-86{
+    transform:translateY(500%)
+}
+
+
+
+
+
+
+
 .square-17{transform:translateY(100%);}
 .flipped .square-17{transform:translate(700%,600%);}
 .square-27{transform:translate(100%,100%);}
