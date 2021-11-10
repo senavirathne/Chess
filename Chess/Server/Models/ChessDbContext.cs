@@ -24,7 +24,7 @@ namespace Chess.Server.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Name=BlazingChat");
+                optionsBuilder.UseSqlite("Name=Default");
             }
         }
 

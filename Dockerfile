@@ -22,7 +22,7 @@ RUN dotnet publish Chess.Server.csproj -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
 COPY --from=build-env /app/Chess/Server/out .
-COPY --from=build-env /app/Chess/Server/DB/chatDB.db .
+COPY --from=build-env /app/Chess/Server/DB/chessDB.db .
 
 #ENTRYPOINT ["dotnet", "Chess.Server.dll", "--urls", "http://*:$PORT"]
 CMD ASPNETCORE_URLS=http://*:$PORT dotnet Chess.Server.dll
