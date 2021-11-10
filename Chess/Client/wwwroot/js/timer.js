@@ -67,7 +67,7 @@ class Timer {
 
         this.setCircleDasharray();
         this.setRemainingPathColor(this.timeLeft);
-        console.log(this.ID+" paused method invoked");
+        
     }
     onTimesUp() {
         clearInterval(this.timerInterval);
@@ -181,14 +181,16 @@ export function initialize(TimeOut,Increment){
 
 
 }
-export function startTimer(){
-    WhiteTimer.startTimer();
+ 
+export function pauseWhiteTimer(){
+        WhiteTimer.pause();
 }
+
 export function pauseTimer(ID){
-    if (ID === "WhiteTimer"){
+    if (ID === 1){
         WhiteTimer.pause();
         BlackTimer.startTimer();
-    }else if (ID === "BlackTimer"){
+    }else{
         BlackTimer.pause();
         WhiteTimer.startTimer();
     }

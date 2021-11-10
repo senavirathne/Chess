@@ -4,11 +4,5 @@ namespace Chess.Shared.Models
     {
         public string ToUserId { get; set; }
         public string FromUserId { get; set; }
-        public bool IsTimerRunning { get; set; }
-
-        public TimerSignal()
-        {
-            IsTimerRunning = false;
-        }
     }
 }

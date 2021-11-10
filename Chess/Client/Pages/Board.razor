@@ -164,12 +164,12 @@ else
 </chess-board>
 
 </div>
-    <div id=@(IsMyColorWhite ? "WhiteTimer" : "BlackTimer")>
-        @if (!TimerState.IsTimerRunning && IsMyColorWhite)
-        {
-            <button class="btn btn-primary" @onclick="StartTimer">Start Game</button>
-        }
-    </div>
+    <div id=@(IsMyColorWhite ? "WhiteTimer" : "BlackTimer") ></div>
+    @*     @if (!TimerState.IsTimerRunning && IsMyColorWhite) *@
+    @*     { *@
+    @*         <button class="btn btn-primary" @onclick="StartTimer">Start Game</button> *@
+    @*     } *@
+    @* </div> *@
     
     
 
@@ -191,11 +191,11 @@ else
     [Parameter]
     public string ToUserId { get; set; }
 
-    public TimerSignal TimerState { get; set; } = new();
+    public bool IsTimerStarted { get; set; } = new();
     
     public static bool IsAllowToMove { get; set; } 
     public bool IsMyColorWhite { get; set; }
-    public bool IsTimerSet { get; set; } 
+    public bool IsTimerSet { get; set; }
     public Piece MovingPiece { get; set; } = new();
     public int FromSquare { get; set; }
     public int ToSquare { get; set; }
@@ -236,6 +236,7 @@ else
         
     
     // todo database state update
+        // both time/color/increment  shouldn't change by url they should come from db
         //stop when time is over
         
         
@@ -262,12 +263,13 @@ else
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
         IsMyColorWhite = query["color"].First() == "w";
+        IsAllowToMove = IsMyColorWhite && !IsTimerStarted;
         var timeOut = int.Parse(query["time"].First());
         IsTimerSet = timeOut > 0;
 
         if (IsTimerSet)
         {
-            TimeOutInSeconds = timeOut; // * 60;
+            TimeOutInSeconds = timeOut * 60; 
             var increment = int.Parse(query["increment"].First());
             TimeIncrementBySeconds = increment > 0 ? increment : 3 ;
             Module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/timer.js");
@@ -302,19 +304,28 @@ else
     //receive  move Signal
         _hubConnection.On<MoveSignal>("ReceiveMoveSignal", async (signal) =>
         {
-            if (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId)
+            if (signal.MovingPiece.Color != null && (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId))
             {
-                if (IsTimerSet)
+                Move(signal);
+                if (IsTimerStarted) //IsTimerSet
                 {
                     await PauseTimer(signal.MovingPiece.Color.Value); // move signal never got empty piece
                 }
-                Move(signal);
+                else
+                {
+                    await TimerSignal();
+                }
                 
-                StateHasChanged();
+                
+                
+                
+                
+                
                 if (signal.FromUserId != FromUserId)
                 {
                     IsAllowToMove = true;
                 }
+                StateHasChanged();
             }
         });
     //SelectCoordinateSignal
@@ -326,14 +337,24 @@ else
                 StateHasChanged();
             }
         });
+    // ReceiveTimerSignal
         _hubConnection.On<TimerSignal>("ReceiveTimerSignal", async (signal) =>
         {
             if (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId)
             {
+                if (signal.FromUserId == FromUserId )
+                {
+                    if (IsMyColorWhite)
+                    {
+                        await Module.InvokeVoidAsync("pauseWhiteTimer");
+                    }
+                    else
+                    {
+                        await Module.InvokeVoidAsync("pauseTimer", 0);
+                    }
+                    IsTimerStarted = true;
+                }
                 
-                await Module.InvokeVoidAsync("startTimer");
-                TimerState.IsTimerRunning = signal.IsTimerRunning;
-                IsAllowToMove = IsMyColorWhite;
                 StateHasChanged();
             }
         });
@@ -341,10 +362,7 @@ else
         
     }
 
-    public class HttpContext
-    {
-        public static object Current { get; set; }
-    }
+     
 
 
     // protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -554,17 +572,16 @@ else
     }
     private async Task PauseTimer(bool isPieceColorWhite)
     {
-        var id = isPieceColorWhite ? "WhiteTimer" : "BlackTimer";
+        var id = isPieceColorWhite ? 1 : 0;
         await Module.InvokeVoidAsync("pauseTimer",id);
        
     }
-    private async Task StartTimer()
+    private async Task TimerSignal()
     {
         var timerState = new TimerSignal()
         {
             ToUserId = ToUserId,
             FromUserId = FromUserId,
-            IsTimerRunning = true
         };
         await _hubConnection.SendAsync("TimerSignal", timerState);
         

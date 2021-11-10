@@ -114,3 +114,13 @@ body:not(.keyboard-navigation-in-use) :focus{outline:0;}
 .outside text{font-size:clamp(.1rem,.25rem,.25rem);}
 chess-board.board{background-size:100%;display:block;height:0;padding-bottom:100%;width:100%;}
 chess-board.board.flipped .piece{left:0;}
+
+.highlight{
+    height:12.5%;
+    left:0;
+    pointer-events:none;
+    position:absolute;
+    top:0;
+    width:12.5%
+}
+
