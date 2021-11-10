@@ -1,3 +1,4 @@
+
 class Timer {
     constructor(Id) {
         this.TIME_LIMIT = 20;
@@ -124,6 +125,22 @@ class Timer {
 
 
 }
+const params = new URLSearchParams(window.location.search);
+if (params.has('color'))
+{
+    const color = params.get('color')
+    if (color === 'w')
+    {
+        document.getElementById("W").id = "WhiteTimer";
+        document.getElementById("B").id = "BlackTimer";
+    }else if (color === 'b')
+    {
+        document.getElementById("W").id = "BlackTimer";
+        document.getElementById("B").id = "WhiteTimer";
+    }
+
+}
+
 
 let BlackTimer = new Timer("BlackTimer");
 let WhiteTimer = new Timer("WhiteTimer");

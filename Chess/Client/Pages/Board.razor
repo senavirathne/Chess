@@ -9,6 +9,8 @@
 @inject HttpClient _httpClient
 
 
+
+
 <div class="panel panel-primary">
 
     <div class="container">
@@ -66,8 +68,8 @@
 
         <div class="container">
             <div>
-                <div id=@(IsMyColorWhite ? "WhiteTimer" : "BlackTimer")></div>
-                @* <div id=@(IsMyColorWhite ? "BlackTimer" : "WhiteTimer")></div> *@
+                
+                <div id="B"></div>
             </div>
 
             <div id="board-layout-main" class="board-layout-main" style="padding-inline-start: 37px;">
@@ -161,8 +163,7 @@
                 </chess-board>
 
             </div>
-
-            <div id=@(IsMyColorWhite ? "BlackTimer" : "WhiteTimer")></div>
+            <div id="W"></div>
             @*     @if (!TimerState.IsTimerRunning && IsMyColorWhite) *@
             @*     { *@
             @*         <button class="btn btn-primary" @onclick="StartTimer">Start Game</button> *@
@@ -178,7 +179,7 @@
 
 
 </div>
-
+ 
 
 @code {
 
@@ -230,7 +231,7 @@
     // todo database state update
     // both time/color/increment  shouldn't change by url they should come from db
     //stop when time is over
-
+        
 
         Reset();
         var claimsPrincipal = (await AuthenticationStateTask).User;
@@ -264,13 +265,15 @@
             TimeOutInSeconds = timeOut * 60;
             var increment = int.Parse(query["increment"].First());
             TimeIncrementBySeconds = increment > 0 ? increment : 3;
-            Module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/timer.js");
             await RunTimer();
+            
         }
         {
             TimeOutInSeconds = 0;
             TimeIncrementBySeconds = 0;
         }
+       
+        
 
     // receive part ===============================>
 
@@ -352,10 +355,7 @@
 
     // protected override async Task OnAfterRenderAsync(bool firstRender)
     // {
-    //     if (firstRender)
-    //     {
-    //         await RunTimer(); 
-    //     }
+    //     
     //     
     // }
 
@@ -546,7 +546,7 @@
 
     private async Task RunTimer()
     {
-    // var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import","./js/timer.js");
+        Module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/timer.js");
         await Module.InvokeVoidAsync("initialize", TimeOutInSeconds, TimeIncrementBySeconds);
     }
 
