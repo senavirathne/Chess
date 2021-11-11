@@ -514,6 +514,30 @@
 
     private void Move(MoveSignal moveSignal)
     {
+        switch (moveSignal.MovingPiece.Type,moveSignal.FromSquare,moveSignal.ToSquare )
+        {
+            case (PieceType.wk,51,71):
+            
+                ChessBoard[61] = new WhitePiece(PieceType.wr);
+                ChessBoard[81] = new Piece();
+                break;
+            case (PieceType.wk,51,31):
+            
+                ChessBoard[41] = new WhitePiece(PieceType.wr);
+                ChessBoard[11] = new Piece();
+                break;
+            case (PieceType.bk,58,78):
+            
+                ChessBoard[68] = new BlackPiece(PieceType.br);
+                ChessBoard[88] = new Piece();
+                break;
+            case (PieceType.bk,58,38):
+            
+                ChessBoard[48] = new BlackPiece(PieceType.br);
+                ChessBoard[18] = new Piece();
+                
+                break;
+        }
         ChessBoard[moveSignal.ToSquare] = moveSignal.MovingPiece;
         ChessBoard[moveSignal.FromSquare] = new Piece();
         ToSquare = 0;
