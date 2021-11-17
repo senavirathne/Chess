@@ -1,5 +1,6 @@
 @page "/board/{ToUserId}"
 @page "/board/"
+@page "/"
 
 @* @using Blazored.LocalStorage *@
 @using Chess.Shared.Models
@@ -34,6 +35,9 @@
                 <span class="blink"></span>
             </div>
             <h2 class="online-text">Opponent is Online</h2>
+            <button class="btn btn-primary" @onclick="CopyBoardToClipboard" disabled=@_boardState.IsDisabled>
+                <i class="@_boardState.ClassName"></i> @_boardState.Text
+            </button>
                                                          
         }
         else
@@ -66,8 +70,8 @@
                 <label>Seconds</label>
             }
 
-            <button class="btn btn-primary" @onclick="CopyToClipboard" disabled=@state.IsDisabled>
-                <i class="@state.ClassName"></i> @state.Text
+            <button class="btn btn-primary" @onclick="CopyInviteToClipboard" disabled=@_invite.IsDisabled>
+                <i class="@_invite.ClassName"></i> @_invite.Text
             </button>
         }
 
@@ -87,7 +91,7 @@
              }
              else
              {
-                 <div id="b"></div>  
+                 //<div id="b"></div>  
              }   
                 
             </div>
@@ -193,9 +197,11 @@
                 {
                     <div id="B"></div> 
                 } 
-            }else
+            }
+            
+            else
             {
-              <div id="w"></div>  
+              //<div id="w"></div>  
             }
           
         </div>
@@ -229,6 +235,7 @@
     public IJSObjectReference Module { get; set; }
     public List<string> BoardStrings { get; set; } = new ();
     public int LastMoveNo { get; set; }
+    public bool IsFromQuery { get; set; }
 
     public ChessBoard ChessBoard { get; set; } = new(); // dictionary/
     
@@ -242,8 +249,9 @@
     public bool ToUserState { get; set; }
 
     CancellationTokenSource cts = new();
-    State state = new("Copy Invite Link", "oi oi-clipboard");
+    State _invite = new("Copy Invite Link", "oi oi-clipboard");
     record State(string Text, string ClassName, bool IsDisabled = false);
+    State _boardState = new("Copy Board State", "oi oi-clipboard");
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; }
@@ -260,7 +268,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("OnInitialized initiated");
     // todo database state update
     // both time/color/increment  shouldn't change by url they should come from db
     //stop when time is over
@@ -308,17 +315,20 @@
         {
             var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
             var query = QueryHelpers.ParseQuery(uri.Query);
-            IsMyColorWhite = query["color"].First() == "w";
+            IsMyColorWhite = query["color"] == "w";
             IsAllowToMove = IsMyColorWhite && IsTimerStarted ==null ;
-            var timeOut = int.Parse(query["time"].First());
-            IsTimerSet = timeOut > 0;
+            TimeOut = int.Parse(query["time"].ToString());
+            
+            IsTimerSet = TimeOut > 0;
             if (IsTimerSet)
             {
-                TimeOutInSeconds = timeOut * 60;
+                TimeOutInSeconds = TimeOut * 60;
                 var increment = int.Parse(query["increment"].First());
                 TimeIncrementBySeconds = increment > 0 ? increment : 3;
-                await RunTimer();
-            
+                IsFromQuery = true;
+
+
+
             }
             else
             {
@@ -403,15 +413,14 @@
                     await TimerSignal();
                 }
 
-                Console.WriteLine(406);
+              
                 if (signal.FromUserId != FromUserId)
                 {
-                    Console.WriteLine(409);
                     IsAllowToMove = true;
                 }
                 
                 StateHasChanged();
-                Console.WriteLine(ChessBoard.ToString());
+               
             }
         });
     //SelectCoordinateSignal
@@ -450,11 +459,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine(firstRender ? "OnAfterRender with firstRender initiated" : "OnAfterRender initiated");
-        if (firstRender)
+        if (IsFromQuery)
         {
-           
-
+            await RunTimer();
+            IsFromQuery = false;
         }
     }
 
@@ -679,11 +687,11 @@
         await SendBoardStringSignal("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     }
 
-    async Task CopyToClipboard()
+    async Task CopyInviteToClipboard()
     {
         
-        var temp = state;
-        state = new State("Invite Link Copied", "oi oi-check", IsDisabled: true);
+        var temp = _invite;
+        _invite = new State("Invite Link Copied", "oi oi-check", IsDisabled: true);
         await _clipboardService.WriteTextAsync(GenerateInviteLink());
         SetTimer();
         if (IsTimerSet)
@@ -691,7 +699,17 @@
             await RunTimer();
         }
         await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
-        state = temp;
+        _invite = temp;
+        
+    }
+    async Task CopyBoardToClipboard()
+    {
+        
+        var temp = _boardState;
+        _boardState = new State("Board State Copied", "oi oi-check", IsDisabled: true);
+        await _clipboardService.WriteTextAsync(ChessBoard.ToString());
+        await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
+        _boardState = temp;
         
     }
     public void Dispose()

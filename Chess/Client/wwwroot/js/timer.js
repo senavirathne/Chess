@@ -1,8 +1,8 @@
 
 class Timer {
     constructor(Id) {
-        this.TIME_LIMIT = 20;
-        this.INCREMENT_FACTOR = 3;
+        this.TIME_LIMIT = 0;
+        this.INCREMENT_FACTOR = 0;
         this.ID = Id
         this.base_timer_path_remaining = Id +"-timer-path-remaining";
         this.base_timer_label = Id + "-timer-label";
@@ -125,22 +125,6 @@ class Timer {
 
 
 }
-const params = new URLSearchParams(window.location.search);
-if (params.has('color'))
-{
-    const color = params.get('color')
-    if (color === 'w')
-    {
-        document.getElementById("w").id = "W";
-        document.getElementById("b").id = "B";
-    }else if (color === 'b')
-    {
-        document.getElementById("w").id = "B";
-        document.getElementById("w").id = "W";
-    }
-
-}
-
 
 let BlackTimer = new Timer("B");
 let WhiteTimer = new Timer("W");
