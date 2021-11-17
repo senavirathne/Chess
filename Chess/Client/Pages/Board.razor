@@ -1,12 +1,17 @@
 @page "/board/{ToUserId}"
+@page "/board/"
 
+@* @using Blazored.LocalStorage *@
 @using Chess.Shared.Models
 @using Microsoft.AspNetCore.SignalR.Client
-@using System.Linq.Dynamic.Core
 @using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager _navigationManager
 @inject IJSRuntime _jsRuntime
 @inject HttpClient _httpClient
+@using System.Threading
+@implements IDisposable
+@inject ClipboardService _clipboardService
+@inject Blazored.LocalStorage.ILocalStorageService _localStore
 
 
 
@@ -14,31 +19,10 @@
 <div class="panel panel-primary">
 
     <div class="container">
-        @if (MyState.FromUserId == FromUserId && MyState.IsOnline)
-        {
-            <div class="online-indicator">
-                <span class="blink"></span>
-            </div>
-            <h2 class="online-text">You are Online</h2>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <button class="btn btn-primary" @onclick="Send">Go Offline </button>
-        }
-        else if (MyState.FromUserId == FromUserId && MyState.IsOnline == false)
-        {
-            <div class="offline-indicator">
-            </div>
-
-            <h2 class="online-text">You are Offline</h2>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <button class="btn btn-primary" @onclick="Send">Go Online </button>
-        }
-        @if (ToUserState)
+       
+        
+        
+        @if (ToUserId != null)
         {
             <span>&nbsp;</span>
             <span>&nbsp;</span>
@@ -49,27 +33,63 @@
             <div class="online-indicator">
                 <span class="blink"></span>
             </div>
-            <h2 class="online-text">@ToUser?.FirstName is Online</h2>
+            <h2 class="online-text">Opponent is Online</h2>
+                                                         
         }
         else
         {
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <div class="offline-indicator">
-                <span class="off-blink"></span>
-            </div>
-            <h2 class="online-text">@ToUser?.FirstName is Offline</h2>
+            <label>Set Color</label>
+            <RadzenSwitch @bind-value="@IsMyColorWhite" Style="margin-bottom: 20px"/>
+
+            @if (IsMyColorWhite)
+            {
+                <span>&nbsp;</span>
+                <label>I'm White</label>
+            }
+            else
+            {
+                <span>&nbsp;</span>
+                <label>I'm Black</label>
+            }
+            <br>
+            <label>Set Timer</label>
+            <RadzenSwitch @bind-value="@IsTimerSet" Style="margin-bottom: 20px"/>
+
+            @if (IsTimerSet)
+            {
+                <label>Set Time in Minutes</label>
+                <span>&nbsp;</span>
+                <input type="number" required="required" @bind="@TimeOut">
+                <label>Time is Increment By</label>
+                <span>&nbsp;</span>
+                <input type="number" required="required" @bind="@IncrementTimerBy">
+                <label>Seconds</label>
+            }
+
+            <button class="btn btn-primary" @onclick="CopyToClipboard" disabled=@state.IsDisabled>
+                <i class="@state.ClassName"></i> @state.Text
+            </button>
         }
 
 
         <div class="container">
             <div>
+             @if (IsTimerSet)
+             {
+                 @if (IsMyColorWhite)
+                 {
+                     <div id="B"></div> 
+                 }
+                 else
+                 {
+                     <div id="W"></div> 
+                 } 
+             }
+             else
+             {
+                 <div id="b"></div>  
+             }   
                 
-                <div id="B"></div>
             </div>
 
             <div id="board-layout-main" class="board-layout-main" style="padding-inline-start: 37px;">
@@ -163,15 +183,21 @@
                 </chess-board>
 
             </div>
-            <div id="W"></div>
-            @*     @if (!TimerState.IsTimerRunning && IsMyColorWhite) *@
-            @*     { *@
-            @*         <button class="btn btn-primary" @onclick="StartTimer">Start Game</button> *@
-            @*     } *@
-            @* </div> *@
-
-
-
+            @if (IsTimerSet)
+            {
+                @if (IsMyColorWhite)
+                {
+                    <div id="W"></div> 
+                }
+                else
+                {
+                    <div id="B"></div> 
+                } 
+            }else
+            {
+              <div id="w"></div>  
+            }
+          
         </div>
 
 
@@ -186,6 +212,9 @@
     [Parameter]
     public string ToUserId { get; set; }
 
+    public string FromUserId { get; set; }
+    public int TimeOut { get; set; }
+    public int IncrementTimerBy { get; set; }
     public bool? IsTimerStarted { get; set; } //for the state only for first time
 
     public static bool IsAllowToMove { get; set; }
@@ -198,20 +227,23 @@
     public string HighLightedSquare2 { get; set; } = "";
     public MoveSignal MoveSignal { get; set; } = new();
     public IJSObjectReference Module { get; set; }
+    public List<string> BoardStrings { get; set; } = new ();
+    public int LastMoveNo { get; set; }
 
     public ChessBoard ChessBoard { get; set; } = new(); // dictionary/
-
-
-    public StateSignal MyState { get; set; } = new();
+    
 
 
     public int TimeOutInSeconds { get; set; }
     public int TimeIncrementBySeconds { get; set; }
 
     public User ToUser { get; set; } = new();
-    public string FromUserId { get; set; }
+    
     public bool ToUserState { get; set; }
 
+    CancellationTokenSource cts = new();
+    State state = new("Copy Invite Link", "oi oi-clipboard");
+    record State(string Text, string ClassName, bool IsDisabled = false);
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; }
@@ -228,79 +260,140 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("OnInitialized initiated");
     // todo database state update
     // both time/color/increment  shouldn't change by url they should come from db
     //stop when time is over
+       
+        // BoardStrings = await GetRecord();
+        if (BoardStrings != null)
+        {
+            LastMoveNo = BoardStrings.Count;
+        }
+       
+        
+        // var claimsPrincipal = (await AuthenticationStateTask).User;
+
+        // if (claimsPrincipal.Identity != null && !claimsPrincipal.Identity.IsAuthenticated)
+        //     _navigationManager.NavigateTo("/");
+
+        // FromUserId = (await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser"))?.UserId.ToString();
+        
+
+        // if (Convert.ToInt32(ToUserId) > 0)
+        //     ToUser = await _httpClient.GetFromJsonAsync<User>("profile/getprofile/" + ToUserId);
+
         
         
-        var claimsPrincipal = (await AuthenticationStateTask).User;
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(_navigationManager.ToAbsoluteUri("/chathub"))
+            .WithAutomaticReconnect(new TimeSpan[]{
+                TimeSpan.FromSeconds(0),
+                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(2),
+            })
+            .Build();
+       
+        await _hubConnection.StartAsync();
+        FromUserId = _hubConnection.ConnectionId;
+        await SendState();
+        
 
-        if (claimsPrincipal.Identity != null && !claimsPrincipal.Identity.IsAuthenticated)
-            _navigationManager.NavigateTo("/");
-
-        FromUserId = (await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser"))?.UserId.ToString();
-
-        if (Convert.ToInt32(ToUserId) > 0)
-            ToUser = await _httpClient.GetFromJsonAsync<User>("profile/getprofile/" + ToUserId);
 
 
-        MyState = new StateSignal
+        if (ToUserId != null) 
         {
-            ToUserId = ToUserId,
-            FromUserId = FromUserId,
-            IsOnline = true
-        };
-
-    // IsMyColorWhite = int.Parse(FromUserId) == 8;
-        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
-        var query = QueryHelpers.ParseQuery(uri.Query);
-        IsMyColorWhite = query["color"].First() == "w";
-        IsAllowToMove = IsMyColorWhite && IsTimerStarted ==null ;
-        var timeOut = int.Parse(query["time"].First());
-        IsTimerSet = timeOut > 0;
-
-        if (IsTimerSet)
-        {
-            TimeOutInSeconds = timeOut * 60;
-            var increment = int.Parse(query["increment"].First());
-            TimeIncrementBySeconds = increment > 0 ? increment : 3;
-            await RunTimer();
+            var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+            var query = QueryHelpers.ParseQuery(uri.Query);
+            IsMyColorWhite = query["color"].First() == "w";
+            IsAllowToMove = IsMyColorWhite && IsTimerStarted ==null ;
+            var timeOut = int.Parse(query["time"].First());
+            IsTimerSet = timeOut > 0;
+            if (IsTimerSet)
+            {
+                TimeOutInSeconds = timeOut * 60;
+                var increment = int.Parse(query["increment"].First());
+                TimeIncrementBySeconds = increment > 0 ? increment : 3;
+                await RunTimer();
             
+            }
+            else
+            {
+                TimeOutInSeconds = 0;
+                TimeIncrementBySeconds = 0;
+            }
+
         }
-        {
-            TimeOutInSeconds = 0;
-            TimeIncrementBySeconds = 0;
-        }
+        
+
        
         
 
     // receive part ===============================>
 
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(_navigationManager.ToAbsoluteUri("/chathub"))
-            .Build();
-
+    //ReceiveStateSignal
+        
         _hubConnection.On<StateSignal>("ReceiveStateSignal", async (signal) =>
         {
-            if (signal.ToUserId == FromUserId && signal.FromUserId == ToUserId)
+            if (signal.LastMoveNo > LastMoveNo)
             {
-                if (MyState.IsOnline && ToUserState == false && signal.IsOnline)
-                {
-                    await SendState(true);
-                }
-                ToUserState = signal.IsOnline;
-                StateHasChanged();
+                await SendBoardStringSignal(null);
+                 
+
+            }
+            else if (signal.LastMoveNo < LastMoveNo)
+            {
+                await SendBoardStringSignal(BoardStrings.Last());
+            }
+            // else
+            // {
+            //     
+            //     ToUserState = true;  
+            // }
+            if (ToUserId == null)
+            {
+                ToUserId = signal.FromUserId;
+                await SendState();
+                
+            }
+            if (ToUserState == false) 
+            {
+                await SendState();
+            }
+            if (IsMyColorWhite)
+            {
+                IsAllowToMove = true;
+            }
+            ToUserState = true;
+            StateHasChanged();
+        });
+        // BoardStringSignal
+        _hubConnection.On<BoardStringSignal>("ReceiveBoardStringSignal", async (signal) =>
+        {
+            if (signal.BoardString != null)
+            {
+                BoardStrings = new List<string>{ signal.BoardString };
+                LastMoveNo = signal.LastMoveNo;
+                // await SaveRecord();
+            }
+            else
+            {
+                await SendBoardStringSignal(BoardStrings.Last());
+                
             }
         });
 
-        await _hubConnection.StartAsync();
-        await _hubConnection.SendAsync("StateSignal", MyState);
+       
     //receive  move Signal
         _hubConnection.On<MoveSignal>("ReceiveMoveSignal", async (signal) =>
         {
             if (signal.MovingPiece.Color != null && (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId))
             {
-                Move(signal);
+                await Move(signal);
+            
                 if (IsTimerStarted != null && IsTimerStarted.Value) //IsTimerSet
                 {
                     await PauseTimer(signal.MovingPiece.Color.Value); // move signal never got empty piece
@@ -309,13 +402,16 @@
                 {
                     await TimerSignal();
                 }
-             
 
+                Console.WriteLine(406);
                 if (signal.FromUserId != FromUserId)
                 {
+                    Console.WriteLine(409);
                     IsAllowToMove = true;
                 }
+                
                 StateHasChanged();
+                Console.WriteLine(ChessBoard.ToString());
             }
         });
     //SelectCoordinateSignal
@@ -352,110 +448,29 @@
     }
 
 
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     
-    //     
-    // }
-
-    private async Task Send()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await SendState(false);
-    }
-
-    private async Task SendState(bool state)
-    {
-        if (!state)
+        Console.WriteLine(firstRender ? "OnAfterRender with firstRender initiated" : "OnAfterRender initiated");
+        if (firstRender)
         {
-            MyState.IsOnline = !MyState.IsOnline;
-        }
+           
 
-        await _hubConnection.SendAsync("StateSignal", MyState);
+        }
     }
 
-
-    
-
-    // public void BoardSet()
+    // private async Task Send()
     // {
-    //     var pieces = Enum.GetValues(typeof(PieceType)).ToDynamicList();
-    //
-    //
-    //     for (var j = 1; j <= 8; j++)
-    //     {
-    //         switch (j)
-    //         {
-    //             case 1:
-    //             {
-    //                 var i = 0;
-    //                 var k = 3;
-    //
-    //                 while (i < 8)
-    //                 {
-    //                     if (i < 5)
-    //                     {
-    //                         ChessBoard.Add(ToCoordinate(i + 1, j), new WhitePiece(pieces[i]));
-    //                     }
-    //                     else
-    //                     {
-    //                         ChessBoard.Add(ToCoordinate(i + k, j), new WhitePiece(pieces[i - 5]));
-    //                         k -= 2;
-    //                     }
-    //
-    //                     i++;
-    //                 }
-    //                 break;
-    //             }
-    //             case 2:
-    //             {
-    //                 for (var i = 1; i <= 8; i++)
-    //                 {
-    //                     ChessBoard.Add(ToCoordinate(i, j), new WhitePiece(pieces[5]));
-    //                 }
-    //                 break;
-    //             }
-    //             case > 2 and < 7:
-    //             {
-    //                 for (var i = 1; i <= 8; i++)
-    //                 {
-    //                     ChessBoard.Add(ToCoordinate(i, j), new Piece());
-    //                 }
-    //                 break;
-    //             }
-    //             case 7:
-    //             {
-    //                 for (var i = 1; i <= 8; i++)
-    //                 {
-    //                     ChessBoard.Add(ToCoordinate(i, j), new BlackPiece(pieces[6]));
-    //                 }
-    //                 break;
-    //             }
-    //             case 8:
-    //             {
-    //                 var i = 0;
-    //                 var k = 3;
-    //
-    //                 while (i < 8)
-    //                 {
-    //                     if (i < 5)
-    //                     {
-    //                         ChessBoard.Add(ToCoordinate(i + 1, j), new BlackPiece(pieces[i + 7]));
-    //                     }
-    //                     else
-    //                     {
-    //                         ChessBoard.Add(ToCoordinate(i + k, j), new BlackPiece(pieces[i + 2]));
-    //                         k -= 2;
-    //                     }
-    //
-    //                     i++;
-    //                 }
-    //                 break;
-    //             }
-    //         }
-    //     }
+    //     await SendState(false);
     // }
-    
+    //
+    private async Task SendState()
+    {
 
+        var signal = new StateSignal(LastMoveNo, FromUserId, ToUserId);
+        
+        await _hubConnection.SendAsync("StateSignal", signal);
+    }
+    
     private void SelectSquare(int coordinate, bool isFirstSquare)
     {
         if (isFirstSquare)
@@ -509,7 +524,7 @@
         }
     }
 
-    private void Move(MoveSignal moveSignal)
+    private async Task Move(MoveSignal moveSignal)
     {
         switch (moveSignal.MovingPiece.Type,moveSignal.FromSquare,moveSignal.ToSquare )
         {
@@ -540,6 +555,9 @@
         ToSquare = 0;
         FromSquare = 0;
         MovingPiece = new Piece();
+        // StateHasChanged();
+        BoardStrings.Add(ChessBoard.ToString());
+        // await SaveRecord();
     }
 
     private async Task SendMove()
@@ -586,7 +604,119 @@
         };
         await _hubConnection.SendAsync("TimerSignal", timerState);
     }
+    
+    public async void SaveRecord(string key, string value)
+    {
+        
+        await _localStore.SetItemAsync(key, value);
+        
+    }
 
+    public async Task<string> GetRecord(string key)
+    {
+        return await _localStore.GetItemAsync<string>(key);
+    }
+
+    public async Task DeleteRecord()
+    {
+        await _localStore.ClearAsync();
+    }
+
+    private async Task SendBoardStringSignal(string boardString)
+    {
+
+        var bSignal = new BoardStringSignal(ToUserId)
+        {
+            BoardString = boardString,
+            LastMoveNo = LastMoveNo
+        };
+        await _hubConnection.SendAsync("BoardStringSignal", bSignal);
+    }
+
+    private string GenerateInviteLink()
+    {
+        var myColor = "";
+        var opponentColor = "";
+        if (IsMyColorWhite)
+        {
+            myColor = "w";
+            opponentColor = "b";
+        }
+        else
+        {
+            myColor = "b";
+            opponentColor = "w";
+        }
+
+
+        var query = IsTimerSet
+            ? new Dictionary<string, string>
+            {
+                { "color",opponentColor },
+                { "time", TimeOut.ToString() },
+                { "increment", IncrementTimerBy.ToString() }
+              
+            }
+            : new Dictionary<string, string>
+            {
+                { "color", opponentColor },
+                { "time", "0" },
+                { "increment", "0" }
+              
+            };
+        
+        
+        
+    //todo add https://game-chess.herokuapp.com/ to constants
+        return QueryHelpers.AddQueryString($"https://localhost:5001/board/{FromUserId}", query);
+      
+    }
+
+    public async Task StartNewGame()
+    {
+        await DeleteRecord();
+        LastMoveNo = 0;
+        await SendBoardStringSignal("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    }
+
+    async Task CopyToClipboard()
+    {
+        
+        var temp = state;
+        state = new State("Invite Link Copied", "oi oi-check", IsDisabled: true);
+        await _clipboardService.WriteTextAsync(GenerateInviteLink());
+        SetTimer();
+        if (IsTimerSet)
+        {
+            await RunTimer();
+        }
+        await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
+        state = temp;
+        
+    }
+    public void Dispose()
+    {
+        cts.Cancel(); // Cancel Task.Delay
+        cts.Dispose();
+    }
+
+    private void SetTimer()
+    {
+       
+        if (IsTimerSet && TimeOut > 0)
+        {
+            TimeOutInSeconds = TimeOut * 60;
+            var increment = IncrementTimerBy;
+            TimeIncrementBySeconds = increment > 0 ? increment : 3; //default
+                
+            
+        }
+        else
+        {
+            TimeOutInSeconds = 0;
+            TimeIncrementBySeconds = 0;
+        }
+    }
 
 
 

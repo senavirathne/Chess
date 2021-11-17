@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
 using Chess.Client.ViewModels;
+using Chess.Shared.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+
 
 
 namespace Chess.Client
@@ -29,8 +32,9 @@ namespace Chess.Client
                 "GameChessClient",client =>client.BaseAddress =new Uri(builder.HostEnvironment.BaseAddress));
             builder.Services.AddScoped<AuthenticationStateProvider,CustomAuthenticationStateProvider>();
             builder.Services.AddScoped<ISetUpViewModel,SetUpViewModel>();
-            
-            
+            builder.Services.AddSingleton<ClipboardService>();
+            builder.Services.AddBlazoredLocalStorage();
+
             await builder.Build().RunAsync();
         }
     }

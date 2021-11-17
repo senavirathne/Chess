@@ -2,7 +2,7 @@ using System;
 
 namespace Chess.Shared.Models
 {
-    public class SelectCoordinateSignal : ISignal
+    public class SelectCoordinateSignal : Signal
     {
         public SelectCoordinateSignal(int coordinate)
         {

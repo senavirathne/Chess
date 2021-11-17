@@ -131,12 +131,12 @@ if (params.has('color'))
     const color = params.get('color')
     if (color === 'w')
     {
-        document.getElementById("W").id = "W";
-        document.getElementById("B").id = "B";
+        document.getElementById("w").id = "W";
+        document.getElementById("b").id = "B";
     }else if (color === 'b')
     {
-        document.getElementById("W").id = "B";
-        document.getElementById("B").id = "W";
+        document.getElementById("w").id = "B";
+        document.getElementById("w").id = "W";
     }
 
 }

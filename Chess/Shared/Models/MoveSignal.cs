@@ -1,6 +1,6 @@
 namespace Chess.Shared.Models
 {
-    public class MoveSignal : ISignal
+    public class MoveSignal : Signal
     {
         public int FromSquare { get; set; }
         public int ToSquare { get; set; }

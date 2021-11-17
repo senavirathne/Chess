@@ -1,6 +1,6 @@
 namespace Chess.Shared.Models
 {
-    public interface ISignal
+    public class Signal
     {
         public string ToUserId { get; set; }
         public string FromUserId { get; set; }
