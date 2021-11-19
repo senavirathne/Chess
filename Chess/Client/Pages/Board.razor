@@ -10,214 +10,225 @@
 @inject IJSRuntime _jsRuntime
 @inject HttpClient _httpClient
 @using System.Threading
+@using System.Text
 @implements IDisposable
 @inject ClipboardService _clipboardService
 @inject Blazored.LocalStorage.ILocalStorageService _localStore
 
 
-
-
 <div class="panel panel-primary">
 
-    <div class="container">
-       
-        
-        
-        @if (ToUserId != null)
+<div class="container">
+
+
+    <button class="btn btn-primary" @onclick="NewGame" disabled=@_newGame.IsDisabled>
+        <i class="@_newGame.ClassName"></i> @_newGame.Text
+    </button>
+    <span>&nbsp;</span>
+    <span>&nbsp;</span>
+
+    <input type="text" required="required" @bind="@CustomFen">
+    <span>&nbsp;</span>
+    <button class="btn btn-primary" @onclick="CustomGame" disabled=@_customGame.IsDisabled>
+        <i class="@_customGame.ClassName"></i> @_customGame.Text
+    </button>
+    <br/>
+    @if (ToUserState || IsRestaredGame)
+    {
+        <span>&nbsp;</span>
+        <span>&nbsp;</span>
+        <span>&nbsp;</span>
+        <span>&nbsp;</span>
+        <span>&nbsp;</span>
+        <span>&nbsp;</span>
+        <div class="online-indicator">
+            <span class="blink"></span>
+        </div>
+        <h2 class="online-text">Opponent is Online</h2>
+        <br/>
+        <button class="btn btn-primary" @onclick="CopyBoardToClipboard" disabled=@_boardState.IsDisabled>
+            <i class="@_boardState.ClassName"></i> @_boardState.Text
+        </button>
+    }
+    else
+    {
+        <label>Set Color</label>
+        <RadzenSwitch @bind-value="@IsMyColorWhite" Style="margin-bottom: 20px"/>
+
+        @if (IsMyColorWhite)
         {
             <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <span>&nbsp;</span>
-            <div class="online-indicator">
-                <span class="blink"></span>
-            </div>
-            <h2 class="online-text">Opponent is Online</h2>
-            <button class="btn btn-primary" @onclick="CopyBoardToClipboard" disabled=@_boardState.IsDisabled>
-                <i class="@_boardState.ClassName"></i> @_boardState.Text
-            </button>
-                                                         
+            <label>I'm White</label>
         }
         else
         {
-            <label>Set Color</label>
-            <RadzenSwitch @bind-value="@IsMyColorWhite" Style="margin-bottom: 20px"/>
+            <span>&nbsp;</span>
+            <label>I'm Black</label>
+        }
+        <br>
+        <label>Set Timer</label>
+        <RadzenSwitch @bind-value="@IsTimerSet" Style="margin-bottom: 20px"/>
 
-            @if (IsMyColorWhite)
-            {
-                <span>&nbsp;</span>
-                <label>I'm White</label>
-            }
-            else
-            {
-                <span>&nbsp;</span>
-                <label>I'm Black</label>
-            }
-            <br>
-            <label>Set Timer</label>
-            <RadzenSwitch @bind-value="@IsTimerSet" Style="margin-bottom: 20px"/>
-
-            @if (IsTimerSet)
-            {
-                <label>Set Time in Minutes</label>
-                <span>&nbsp;</span>
-                <input type="number" required="required" @bind="@TimeOut">
-                <label>Time is Increment By</label>
-                <span>&nbsp;</span>
-                <input type="number" required="required" @bind="@IncrementTimerBy">
-                <label>Seconds</label>
-            }
-
-            <button class="btn btn-primary" @onclick="CopyInviteToClipboard" disabled=@_invite.IsDisabled>
-                <i class="@_invite.ClassName"></i> @_invite.Text
-            </button>
+        @if (IsTimerSet)
+        {
+            <label>Set Time in Minutes</label>
+            <span>&nbsp;</span>
+            <input type="number" required="required" @bind="@TimeOut">
+            <label>Time is Increment By</label>
+            <span>&nbsp;</span>
+            <input type="number" required="required" @bind="@IncrementTimerBy">
+            <label>Seconds</label>
         }
 
-
-        <div class="container">
-            <div>
-             @if (IsTimerSet)
-             {
-                 @if (IsMyColorWhite)
-                 {
-                     <div id="B"></div> 
-                 }
-                 else
-                 {
-                     <div id="W"></div> 
-                 } 
-             }
-             else
-             {
-                 //<div id="b"></div>  
-             }   
-                
-            </div>
-
-            <div id="board-layout-main" class="board-layout-main" style="padding-inline-start: 37px;">
-
-                <chess-board id="board-board1632857578401" class="board@(IsMyColorWhite ? "" : " flipped")">
+        <button class="btn btn-primary" @onclick="CopyInviteToClipboard" disabled=@_invite.IsDisabled>
+            <i class="@_invite.ClassName"></i> @_invite.Text
+        </button>
+    }
 
 
-                    @if (!IsMyColorWhite)
-                    {
-                        <svg viewBox="0 0 100 100" class="coordinates outside">
-                            <text x="2" y="3.5" font-size="3.1" class="coordinate-grey">1</text><text x="2" y="16" font-size="3.1" class="coordinate-grey">2</text><text x="2" y="28.5" font-size="3.1" class="coordinate-grey">3</text><text x="2" y="41" font-size="3.1" class="coordinate-grey">4</text><text x="2" y="53.5" font-size="3.1" class="coordinate-grey">5</text><text x="2" y="66" font-size="3.1" class="coordinate-grey">6</text><text x="2" y="78.5" font-size="3.1" class="coordinate-grey">7</text><text x="2" y="91" font-size="3.1" class="coordinate-grey">8</text><text x="10.35" y="99.25" font-size="3.1" class="coordinate-grey">h</text><text x="22.85" y="99.25" font-size="3.1" class="coordinate-grey">g</text><text x="35.35" y="99.25" font-size="3.1" class="coordinate-grey">f</text><text x="47.85" y="99.25" font-size="3.1" class="coordinate-grey">e</text><text x="60.35" y="99.25" font-size="3.1" class="coordinate-grey">d</text><text x="72.85" y="99.25" font-size="3.1" class="coordinate-grey">c</text><text x="85.35" y="99.25" font-size="3.1" class="coordinate-grey">b</text><text x="97.85" y="99.25" font-size="3.1" class="coordinate-grey">a</text>
-                        </svg>
-                    }
-                    else
-                    {
-                        <svg viewBox="0 0 100 100" class="coordinates outside">
-                            <text x="2" y="3.5" font-size="3.1" class="coordinate-grey">8</text><text x="2" y="16" font-size="3.1" class="coordinate-grey">7</text><text x="2" y="28.5" font-size="3.1" class="coordinate-grey">6</text><text x="2" y="41" font-size="3.1" class="coordinate-grey">5</text><text x="2" y="53.5" font-size="3.1" class="coordinate-grey">4</text><text x="2" y="66" font-size="3.1" class="coordinate-grey">3</text><text x="2" y="78.5" font-size="3.1" class="coordinate-grey">2</text><text x="2" y="91" font-size="3.1" class="coordinate-grey">1</text><text x="10.35" y="99.25" font-size="3.1" class="coordinate-grey">a</text><text x="22.85" y="99.25" font-size="3.1" class="coordinate-grey">b</text><text x="35.35" y="99.25" font-size="3.1" class="coordinate-grey">c</text><text x="47.85" y="99.25" font-size="3.1" class="coordinate-grey">d</text><text x="60.35" y="99.25" font-size="3.1" class="coordinate-grey">e</text><text x="72.85" y="99.25" font-size="3.1" class="coordinate-grey">f</text><text x="85.35" y="99.25" font-size="3.1" class="coordinate-grey">g</text><text x="97.85" y="99.25" font-size="3.1" class="coordinate-grey">h</text>
-                        </svg>
-                    }
-
-
-                    <div class="@(HighLightedSquare1)" style="background-color: rgb(255, 255, 0); opacity: 0.5;" data-test-element="highlight"></div>
-                    <div class="@(HighLightedSquare2)" style="background-color: rgb(255, 255, 0); opacity: 0.5;" data-test-element="highlight"></div>
-
-                    <div class="piece @(ChessBoard.Board[11].Type) square-11" @onclick="() => Clicked(11)"></div>
-                    <div class="piece @(ChessBoard.Board[21].Type) square-21" @onclick="() => Clicked(21)"></div>
-                    <div class="piece @(ChessBoard.Board[31].Type) square-31" @onclick="() => Clicked(31)"></div>
-                    <div class="piece @(ChessBoard.Board[41].Type) square-41" @onclick="() => Clicked(41)"></div>
-                    <div class="piece @(ChessBoard.Board[51].Type) square-51" @onclick="() => Clicked(51)"></div>
-                    <div class="piece @(ChessBoard.Board[81].Type) square-81" @onclick="() => Clicked(81)"></div>
-                    <div class="piece @(ChessBoard.Board[71].Type) square-71" @onclick="() => Clicked(71)"></div>
-                    <div class="piece @(ChessBoard.Board[61].Type) square-61" @onclick="() => Clicked(61)"></div>
-                    <div class="piece @(ChessBoard.Board[12].Type) square-12" @onclick="() => Clicked(12)"></div>
-                    <div class="piece @(ChessBoard.Board[22].Type) square-22" @onclick="() => Clicked(22)"></div>
-                    <div class="piece @(ChessBoard.Board[32].Type) square-32" @onclick="() => Clicked(32)"></div>
-                    <div class="piece @(ChessBoard.Board[42].Type) square-42" @onclick="() => Clicked(42)"></div>
-                    <div class="piece @(ChessBoard.Board[52].Type) square-52" @onclick="() => Clicked(52)"></div>
-                    <div class="piece @(ChessBoard.Board[62].Type) square-62" @onclick="() => Clicked(62)"></div>
-                    <div class="piece @(ChessBoard.Board[72].Type) square-72" @onclick="() => Clicked(72)"></div>
-                    <div class="piece @(ChessBoard.Board[82].Type) square-82" @onclick="() => Clicked(82)"></div>
-                    <div class="piece @(ChessBoard.Board[13].Type) square-13" @onclick="() => Clicked(13)"></div>
-                    <div class="piece @(ChessBoard.Board[23].Type) square-23" @onclick="() => Clicked(23)"></div>
-                    <div class="piece @(ChessBoard.Board[33].Type) square-33" @onclick="() => Clicked(33)"></div>
-                    <div class="piece @(ChessBoard.Board[43].Type) square-43" @onclick="() => Clicked(43)"></div>
-                    <div class="piece @(ChessBoard.Board[53].Type) square-53" @onclick="() => Clicked(53)"></div>
-                    <div class="piece @(ChessBoard.Board[63].Type) square-63" @onclick="() => Clicked(63)"></div>
-                    <div class="piece @(ChessBoard.Board[73].Type) square-73" @onclick="() => Clicked(73)"></div>
-                    <div class="piece @(ChessBoard.Board[83].Type) square-83" @onclick="() => Clicked(83)"></div>
-                    <div class="piece @(ChessBoard.Board[14].Type) square-14" @onclick="() => Clicked(14)"></div>
-                    <div class="piece @(ChessBoard.Board[24].Type) square-24" @onclick="() => Clicked(24)"></div>
-                    <div class="piece @(ChessBoard.Board[34].Type) square-34" @onclick="() => Clicked(34)"></div>
-                    <div class="piece @(ChessBoard.Board[44].Type) square-44" @onclick="() => Clicked(44)"></div>
-                    <div class="piece @(ChessBoard.Board[54].Type) square-54" @onclick="() => Clicked(54)"></div>
-                    <div class="piece @(ChessBoard.Board[64].Type) square-64" @onclick="() => Clicked(64)"></div>
-                    <div class="piece @(ChessBoard.Board[74].Type) square-74" @onclick="() => Clicked(74)"></div>
-                    <div class="piece @(ChessBoard.Board[84].Type) square-84" @onclick="() => Clicked(84)"></div>
-                    <div class="piece @(ChessBoard.Board[15].Type) square-15" @onclick="() => Clicked(15)"></div>
-                    <div class="piece @(ChessBoard.Board[25].Type) square-25" @onclick="() => Clicked(25)"></div>
-                    <div class="piece @(ChessBoard.Board[35].Type) square-35" @onclick="() => Clicked(35)"></div>
-                    <div class="piece @(ChessBoard.Board[45].Type) square-45" @onclick="() => Clicked(45)"></div>
-                    <div class="piece @(ChessBoard.Board[55].Type) square-55" @onclick="() => Clicked(55)"></div>
-                    <div class="piece @(ChessBoard.Board[65].Type) square-65" @onclick="() => Clicked(65)"></div>
-                    <div class="piece @(ChessBoard.Board[75].Type) square-75" @onclick="() => Clicked(75)"></div>
-                    <div class="piece @(ChessBoard.Board[85].Type) square-85" @onclick="() => Clicked(85)"></div>
-                    <div class="piece @(ChessBoard.Board[16].Type) square-16" @onclick="() => Clicked(16)"></div>
-                    <div class="piece @(ChessBoard.Board[26].Type) square-26" @onclick="() => Clicked(26)"></div>
-                    <div class="piece @(ChessBoard.Board[36].Type) square-36" @onclick="() => Clicked(36)"></div>
-                    <div class="piece @(ChessBoard.Board[46].Type) square-46" @onclick="() => Clicked(46)"></div>
-                    <div class="piece @(ChessBoard.Board[56].Type) square-56" @onclick="() => Clicked(56)"></div>
-                    <div class="piece @(ChessBoard.Board[66].Type) square-66" @onclick="() => Clicked(66)"></div>
-                    <div class="piece @(ChessBoard.Board[76].Type) square-76" @onclick="() => Clicked(76)"></div>
-                    <div class="piece @(ChessBoard.Board[86].Type) square-86" @onclick="() => Clicked(86)"></div>
-                    <div class="piece @(ChessBoard.Board[17].Type) square-17" @onclick="() => Clicked(17)"></div>
-                    <div class="piece @(ChessBoard.Board[27].Type) square-27" @onclick="() => Clicked(27)"></div>
-                    <div class="piece @(ChessBoard.Board[37].Type) square-37" @onclick="() => Clicked(37)"></div>
-                    <div class="piece @(ChessBoard.Board[47].Type) square-47" @onclick="() => Clicked(47)"></div>
-                    <div class="piece @(ChessBoard.Board[57].Type) square-57" @onclick="() => Clicked(57)"></div>
-                    <div class="piece @(ChessBoard.Board[67].Type) square-67" @onclick="() => Clicked(67)"></div>
-                    <div class="piece @(ChessBoard.Board[77].Type) square-77" @onclick="() => Clicked(77)"></div>
-                    <div class="piece @(ChessBoard.Board[87].Type) square-87" @onclick="() => Clicked(87)"></div>
-                    <div class="piece @(ChessBoard.Board[18].Type) square-18" @onclick="() => Clicked(18)"></div>
-                    <div class="piece @(ChessBoard.Board[28].Type) square-28" @onclick="() => Clicked(28)"></div>
-                    <div class="piece @(ChessBoard.Board[38].Type) square-38" @onclick="() => Clicked(38)"></div>
-                    <div class="piece @(ChessBoard.Board[48].Type) square-48" @onclick="() => Clicked(48)"></div>
-                    <div class="piece @(ChessBoard.Board[58].Type) square-58" @onclick="() => Clicked(58)"></div>
-                    <div class="piece @(ChessBoard.Board[88].Type) square-88" @onclick="() => Clicked(88)"></div>
-                    <div class="piece @(ChessBoard.Board[78].Type) square-78" @onclick="() => Clicked(78)"></div>
-                    <div class="piece @(ChessBoard.Board[68].Type) square-68" @onclick="() => Clicked(68)"></div>
-
-
-                </chess-board>
-
-            </div>
+    <div class="container">
+        <div>
             @if (IsTimerSet)
             {
                 @if (IsMyColorWhite)
                 {
-                    <div id="W"></div> 
+                    <div id="B"></div>
                 }
                 else
                 {
-                    <div id="B"></div> 
-                } 
+                    <div id="W"></div>
+                }
             }
-            
             else
             {
-              //<div id="w"></div>  
+                //<div id="b"></div>  
             }
-          
+
         </div>
 
+        <div id="board-layout-main" class="board-layout-main" style="padding-inline-start: 37px;">
+
+            <chess-board id="board-board1632857578401" class="board@(IsMyColorWhite ? "" : " flipped")">
+
+
+                @if (!IsMyColorWhite)
+                {
+                    <svg viewBox="0 0 100 100" class="coordinates outside">
+                        <text x="2" y="3.5" font-size="3.1" class="coordinate-grey">1</text><text x="2" y="16" font-size="3.1" class="coordinate-grey">2</text><text x="2" y="28.5" font-size="3.1" class="coordinate-grey">3</text><text x="2" y="41" font-size="3.1" class="coordinate-grey">4</text><text x="2" y="53.5" font-size="3.1" class="coordinate-grey">5</text><text x="2" y="66" font-size="3.1" class="coordinate-grey">6</text><text x="2" y="78.5" font-size="3.1" class="coordinate-grey">7</text><text x="2" y="91" font-size="3.1" class="coordinate-grey">8</text><text x="10.35" y="99.25" font-size="3.1" class="coordinate-grey">h</text><text x="22.85" y="99.25" font-size="3.1" class="coordinate-grey">g</text><text x="35.35" y="99.25" font-size="3.1" class="coordinate-grey">f</text><text x="47.85" y="99.25" font-size="3.1" class="coordinate-grey">e</text><text x="60.35" y="99.25" font-size="3.1" class="coordinate-grey">d</text><text x="72.85" y="99.25" font-size="3.1" class="coordinate-grey">c</text><text x="85.35" y="99.25" font-size="3.1" class="coordinate-grey">b</text><text x="97.85" y="99.25" font-size="3.1" class="coordinate-grey">a</text>
+                    </svg>
+                }
+                else
+                {
+                    <svg viewBox="0 0 100 100" class="coordinates outside">
+                        <text x="2" y="3.5" font-size="3.1" class="coordinate-grey">8</text><text x="2" y="16" font-size="3.1" class="coordinate-grey">7</text><text x="2" y="28.5" font-size="3.1" class="coordinate-grey">6</text><text x="2" y="41" font-size="3.1" class="coordinate-grey">5</text><text x="2" y="53.5" font-size="3.1" class="coordinate-grey">4</text><text x="2" y="66" font-size="3.1" class="coordinate-grey">3</text><text x="2" y="78.5" font-size="3.1" class="coordinate-grey">2</text><text x="2" y="91" font-size="3.1" class="coordinate-grey">1</text><text x="10.35" y="99.25" font-size="3.1" class="coordinate-grey">a</text><text x="22.85" y="99.25" font-size="3.1" class="coordinate-grey">b</text><text x="35.35" y="99.25" font-size="3.1" class="coordinate-grey">c</text><text x="47.85" y="99.25" font-size="3.1" class="coordinate-grey">d</text><text x="60.35" y="99.25" font-size="3.1" class="coordinate-grey">e</text><text x="72.85" y="99.25" font-size="3.1" class="coordinate-grey">f</text><text x="85.35" y="99.25" font-size="3.1" class="coordinate-grey">g</text><text x="97.85" y="99.25" font-size="3.1" class="coordinate-grey">h</text>
+                    </svg>
+                }
+
+
+                <div class="@(HighLightedSquare1)" style="background-color: rgb(255, 255, 0); opacity: 0.5;" data-test-element="highlight"></div>
+                <div class="@(HighLightedSquare2)" style="background-color: rgb(255, 255, 0); opacity: 0.5;" data-test-element="highlight"></div>
+
+                <div class="piece @(ChessBoard.Board[11].Type) square-11" @onclick="() => Clicked(11)"></div>
+                <div class="piece @(ChessBoard.Board[21].Type) square-21" @onclick="() => Clicked(21)"></div>
+                <div class="piece @(ChessBoard.Board[31].Type) square-31" @onclick="() => Clicked(31)"></div>
+                <div class="piece @(ChessBoard.Board[41].Type) square-41" @onclick="() => Clicked(41)"></div>
+                <div class="piece @(ChessBoard.Board[51].Type) square-51" @onclick="() => Clicked(51)"></div>
+                <div class="piece @(ChessBoard.Board[81].Type) square-81" @onclick="() => Clicked(81)"></div>
+                <div class="piece @(ChessBoard.Board[71].Type) square-71" @onclick="() => Clicked(71)"></div>
+                <div class="piece @(ChessBoard.Board[61].Type) square-61" @onclick="() => Clicked(61)"></div>
+                <div class="piece @(ChessBoard.Board[12].Type) square-12" @onclick="() => Clicked(12)"></div>
+                <div class="piece @(ChessBoard.Board[22].Type) square-22" @onclick="() => Clicked(22)"></div>
+                <div class="piece @(ChessBoard.Board[32].Type) square-32" @onclick="() => Clicked(32)"></div>
+                <div class="piece @(ChessBoard.Board[42].Type) square-42" @onclick="() => Clicked(42)"></div>
+                <div class="piece @(ChessBoard.Board[52].Type) square-52" @onclick="() => Clicked(52)"></div>
+                <div class="piece @(ChessBoard.Board[62].Type) square-62" @onclick="() => Clicked(62)"></div>
+                <div class="piece @(ChessBoard.Board[72].Type) square-72" @onclick="() => Clicked(72)"></div>
+                <div class="piece @(ChessBoard.Board[82].Type) square-82" @onclick="() => Clicked(82)"></div>
+                <div class="piece @(ChessBoard.Board[13].Type) square-13" @onclick="() => Clicked(13)"></div>
+                <div class="piece @(ChessBoard.Board[23].Type) square-23" @onclick="() => Clicked(23)"></div>
+                <div class="piece @(ChessBoard.Board[33].Type) square-33" @onclick="() => Clicked(33)"></div>
+                <div class="piece @(ChessBoard.Board[43].Type) square-43" @onclick="() => Clicked(43)"></div>
+                <div class="piece @(ChessBoard.Board[53].Type) square-53" @onclick="() => Clicked(53)"></div>
+                <div class="piece @(ChessBoard.Board[63].Type) square-63" @onclick="() => Clicked(63)"></div>
+                <div class="piece @(ChessBoard.Board[73].Type) square-73" @onclick="() => Clicked(73)"></div>
+                <div class="piece @(ChessBoard.Board[83].Type) square-83" @onclick="() => Clicked(83)"></div>
+                <div class="piece @(ChessBoard.Board[14].Type) square-14" @onclick="() => Clicked(14)"></div>
+                <div class="piece @(ChessBoard.Board[24].Type) square-24" @onclick="() => Clicked(24)"></div>
+                <div class="piece @(ChessBoard.Board[34].Type) square-34" @onclick="() => Clicked(34)"></div>
+                <div class="piece @(ChessBoard.Board[44].Type) square-44" @onclick="() => Clicked(44)"></div>
+                <div class="piece @(ChessBoard.Board[54].Type) square-54" @onclick="() => Clicked(54)"></div>
+                <div class="piece @(ChessBoard.Board[64].Type) square-64" @onclick="() => Clicked(64)"></div>
+                <div class="piece @(ChessBoard.Board[74].Type) square-74" @onclick="() => Clicked(74)"></div>
+                <div class="piece @(ChessBoard.Board[84].Type) square-84" @onclick="() => Clicked(84)"></div>
+                <div class="piece @(ChessBoard.Board[15].Type) square-15" @onclick="() => Clicked(15)"></div>
+                <div class="piece @(ChessBoard.Board[25].Type) square-25" @onclick="() => Clicked(25)"></div>
+                <div class="piece @(ChessBoard.Board[35].Type) square-35" @onclick="() => Clicked(35)"></div>
+                <div class="piece @(ChessBoard.Board[45].Type) square-45" @onclick="() => Clicked(45)"></div>
+                <div class="piece @(ChessBoard.Board[55].Type) square-55" @onclick="() => Clicked(55)"></div>
+                <div class="piece @(ChessBoard.Board[65].Type) square-65" @onclick="() => Clicked(65)"></div>
+                <div class="piece @(ChessBoard.Board[75].Type) square-75" @onclick="() => Clicked(75)"></div>
+                <div class="piece @(ChessBoard.Board[85].Type) square-85" @onclick="() => Clicked(85)"></div>
+                <div class="piece @(ChessBoard.Board[16].Type) square-16" @onclick="() => Clicked(16)"></div>
+                <div class="piece @(ChessBoard.Board[26].Type) square-26" @onclick="() => Clicked(26)"></div>
+                <div class="piece @(ChessBoard.Board[36].Type) square-36" @onclick="() => Clicked(36)"></div>
+                <div class="piece @(ChessBoard.Board[46].Type) square-46" @onclick="() => Clicked(46)"></div>
+                <div class="piece @(ChessBoard.Board[56].Type) square-56" @onclick="() => Clicked(56)"></div>
+                <div class="piece @(ChessBoard.Board[66].Type) square-66" @onclick="() => Clicked(66)"></div>
+                <div class="piece @(ChessBoard.Board[76].Type) square-76" @onclick="() => Clicked(76)"></div>
+                <div class="piece @(ChessBoard.Board[86].Type) square-86" @onclick="() => Clicked(86)"></div>
+                <div class="piece @(ChessBoard.Board[17].Type) square-17" @onclick="() => Clicked(17)"></div>
+                <div class="piece @(ChessBoard.Board[27].Type) square-27" @onclick="() => Clicked(27)"></div>
+                <div class="piece @(ChessBoard.Board[37].Type) square-37" @onclick="() => Clicked(37)"></div>
+                <div class="piece @(ChessBoard.Board[47].Type) square-47" @onclick="() => Clicked(47)"></div>
+                <div class="piece @(ChessBoard.Board[57].Type) square-57" @onclick="() => Clicked(57)"></div>
+                <div class="piece @(ChessBoard.Board[67].Type) square-67" @onclick="() => Clicked(67)"></div>
+                <div class="piece @(ChessBoard.Board[77].Type) square-77" @onclick="() => Clicked(77)"></div>
+                <div class="piece @(ChessBoard.Board[87].Type) square-87" @onclick="() => Clicked(87)"></div>
+                <div class="piece @(ChessBoard.Board[18].Type) square-18" @onclick="() => Clicked(18)"></div>
+                <div class="piece @(ChessBoard.Board[28].Type) square-28" @onclick="() => Clicked(28)"></div>
+                <div class="piece @(ChessBoard.Board[38].Type) square-38" @onclick="() => Clicked(38)"></div>
+                <div class="piece @(ChessBoard.Board[48].Type) square-48" @onclick="() => Clicked(48)"></div>
+                <div class="piece @(ChessBoard.Board[58].Type) square-58" @onclick="() => Clicked(58)"></div>
+                <div class="piece @(ChessBoard.Board[88].Type) square-88" @onclick="() => Clicked(88)"></div>
+                <div class="piece @(ChessBoard.Board[78].Type) square-78" @onclick="() => Clicked(78)"></div>
+                <div class="piece @(ChessBoard.Board[68].Type) square-68" @onclick="() => Clicked(68)"></div>
+
+
+            </chess-board>
+
+        </div>
+        @if (IsTimerSet)
+        {
+            @if (IsMyColorWhite)
+            {
+                <div id="W"></div>
+            }
+            else
+            {
+                <div id="B"></div>
+            }
+        }
+
+        else
+        {
+            //<div id="w"></div>  
+        }
 
     </div>
 
 
 </div>
- 
+
+
+</div>
+
 
 @code {
 
     [Parameter]
     public string ToUserId { get; set; }
 
+    public bool IsRestaredGame { get; set; }
     public string FromUserId { get; set; }
     public int TimeOut { get; set; }
     public int IncrementTimerBy { get; set; }
@@ -225,7 +236,8 @@
 
     public static bool IsAllowToMove { get; set; }
     public bool IsMyColorWhite { get; set; }
-    public bool IsTimerSet { get; set; }
+    public bool IsTimerSet { get; set; } //for setup time
+    // public bool IsTimerAvailable { get; set; }
     public Piece MovingPiece { get; set; } = new();
     public int FromSquare { get; set; }
     public int ToSquare { get; set; }
@@ -233,25 +245,30 @@
     public string HighLightedSquare2 { get; set; } = "";
     public MoveSignal MoveSignal { get; set; } = new();
     public IJSObjectReference Module { get; set; }
-    public List<string> BoardStrings { get; set; } = new ();
+    public List<string> BoardStrings { get; set; } = new() { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w" };
+    public string BoardString { get; set; } = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+    public string CustomFen { get; set; }
     public int LastMoveNo { get; set; }
     public bool IsFromQuery { get; set; }
 
     public ChessBoard ChessBoard { get; set; } = new(); // dictionary/
-    
 
 
     public int TimeOutInSeconds { get; set; }
     public int TimeIncrementBySeconds { get; set; }
 
     public User ToUser { get; set; } = new();
-    
+
     public bool ToUserState { get; set; }
 
     CancellationTokenSource cts = new();
     State _invite = new("Copy Invite Link", "oi oi-clipboard");
+
     record State(string Text, string ClassName, bool IsDisabled = false);
+
     State _boardState = new("Copy Board State", "oi oi-clipboard");
+    State _newGame = new("Start new game", "oi oi-clipboard");
+    State _customGame = new("Start custom game", "oi oi-clipboard");
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; }
@@ -269,32 +286,83 @@
     protected override async Task OnInitializedAsync()
     {
     // todo database state update
+    // fix turn move on board string
     // both time/color/increment  shouldn't change by url they should come from db
     //stop when time is over
-       
-        // BoardStrings = await GetRecord();
-        if (BoardStrings != null)
+    // send board string list wen requested
+    //user offline status
+
+    //correct cess boad   
+    // if null => nothing happen
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+        if (query.ContainsKey("color"))
         {
-            LastMoveNo = BoardStrings.Count;
+            IsMyColorWhite = query["color"] == "w";
+
+    // if (BoardStrings.Count == 1)
+    // {
+    //     IsAllowToMove = IsMyColorWhite && IsTimerStarted == null;
+    // }
+
+            TimeOut = int.Parse(query["time"].ToString());
+            ToUserState = true;
+
+            IsTimerSet = TimeOut > 0;
+            if (IsTimerSet)
+            {
+                TimeOutInSeconds = TimeOut * 60;
+                var increment = int.Parse(query["increment"].First());
+                TimeIncrementBySeconds = increment > 0 ? increment : 3;
+                IsFromQuery = true;
+            }
+            else
+            {
+                TimeOutInSeconds = 0;
+                TimeIncrementBySeconds = 0;
+            }
         }
-       
-        
-        // var claimsPrincipal = (await AuthenticationStateTask).User;
+        {
+            var tempList = (await GetRecord("boardStrings"))?.Split(",").ToList();
+            var lastMove = await GetRecord("lastMoveNo");
 
-        // if (claimsPrincipal.Identity != null && !claimsPrincipal.Identity.IsAuthenticated)
-        //     _navigationManager.NavigateTo("/");
+            if (lastMove != null)
+            {
+                var lastString = await GetRecord(lastMove);
+                if (lastString != null)
+                {
+                    BoardString = lastString;
+                    Console.WriteLine(291);
+                    Console.WriteLine(lastString);
+                    LastMoveNo = int.Parse(lastMove);
 
-        // FromUserId = (await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser"))?.UserId.ToString();
-        
+                    SetBoard(lastString);
+                    Console.WriteLine(296);
+                    Console.WriteLine(lastMove);
+                }
+                if (tempList != null)
+                {
+                    BoardStrings = tempList;
+                    if (lastString == null)
+                    {
+                        var tempString = tempList.Last();
+                        BoardString = tempString;
 
-        // if (Convert.ToInt32(ToUserId) > 0)
-        //     ToUser = await _httpClient.GetFromJsonAsync<User>("profile/getprofile/" + ToUserId);
+                        SetBoard(tempString);
+                        LastMoveNo = tempList.Count;
+                        Console.WriteLine(309);
+                        Console.WriteLine(tempString);
+                    }
+                }
+            }
 
-        
-        
+
+            ToUserId ??= await GetRecord("toUserId");
+        }
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(_navigationManager.ToAbsoluteUri("/chathub"))
-            .WithAutomaticReconnect(new TimeSpan[]{
+            .WithAutomaticReconnect(new TimeSpan[]
+            {
                 TimeSpan.FromSeconds(0),
                 TimeSpan.FromSeconds(3),
                 TimeSpan.FromSeconds(3),
@@ -303,124 +371,111 @@
                 TimeSpan.FromSeconds(2),
             })
             .Build();
-       
+
         await _hubConnection.StartAsync();
         FromUserId = _hubConnection.ConnectionId;
         await SendState();
-        
 
-
-
-        if (ToUserId != null) 
-        {
-            var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
-            var query = QueryHelpers.ParseQuery(uri.Query);
-            IsMyColorWhite = query["color"] == "w";
-            IsAllowToMove = IsMyColorWhite && IsTimerStarted ==null ;
-            TimeOut = int.Parse(query["time"].ToString());
-            
-            IsTimerSet = TimeOut > 0;
-            if (IsTimerSet)
-            {
-                TimeOutInSeconds = TimeOut * 60;
-                var increment = int.Parse(query["increment"].First());
-                TimeIncrementBySeconds = increment > 0 ? increment : 3;
-                IsFromQuery = true;
-
-
-
-            }
-            else
-            {
-                TimeOutInSeconds = 0;
-                TimeIncrementBySeconds = 0;
-            }
-
-        }
-        
-
-       
-        
 
     // receive part ===============================>
 
     //ReceiveStateSignal
-        
+
         _hubConnection.On<StateSignal>("ReceiveStateSignal", async (signal) =>
         {
             if (signal.LastMoveNo > LastMoveNo)
             {
-                await SendBoardStringSignal(null);
-                 
-
+                await SendBoardStringSignal(true);
             }
             else if (signal.LastMoveNo < LastMoveNo)
             {
-                await SendBoardStringSignal(BoardStrings.Last());
+                await SendBoardStringSignal(false);
             }
-            // else
-            // {
-            //     
-            //     ToUserState = true;  
-            // }
-            if (ToUserId == null)
+
+    // else
+    // {
+    //     
+    //     ToUserState = true;  
+    // }
+            if (ToUserId == null || ToUserId != signal.FromUserId)
             {
                 ToUserId = signal.FromUserId;
                 await SendState();
-                
+                SaveRecord("toUserId", signal.FromUserId);
             }
-            if (ToUserState == false) 
+            if (ToUserState == false)
             {
                 await SendState();
             }
-            if (IsMyColorWhite)
+
+            if (IsMyColorWhite && LastMoveNo == 0)
             {
                 IsAllowToMove = true;
             }
             ToUserState = true;
             StateHasChanged();
         });
-        // BoardStringSignal
+    // BoardStringSignal
         _hubConnection.On<BoardStringSignal>("ReceiveBoardStringSignal", async (signal) =>
         {
-            if (signal.BoardString != null)
+            if (signal.BoardStrings != null)
             {
-                BoardStrings = new List<string>{ signal.BoardString };
+                BoardStrings = signal.BoardStrings;
+                SetBoard(signal.BoardString ?? signal.BoardStrings.Last());
                 LastMoveNo = signal.LastMoveNo;
-                // await SaveRecord();
+                if (LastMoveNo == 0)
+                {
+                    HighLightedSquare1 = "";
+                    HighLightedSquare2 = "";
+                    await DeleteRecord();
+                }
+                StateHasChanged();
             }
             else
             {
-                await SendBoardStringSignal(BoardStrings.Last());
-                
+                await SendBoardStringSignal(false);
             }
         });
 
-       
+
     //receive  move Signal
         _hubConnection.On<MoveSignal>("ReceiveMoveSignal", async (signal) =>
         {
             if (signal.MovingPiece.Color != null && (signal.FromUserId == FromUserId || signal.ToUserId == FromUserId && signal.FromUserId == ToUserId))
             {
-                await Move(signal);
-            
-                if (IsTimerStarted != null && IsTimerStarted.Value) //IsTimerSet
+                Move(signal);
+                if (signal.MovingPiece.Color.Value)
                 {
-                    await PauseTimer(signal.MovingPiece.Color.Value); // move signal never got empty piece
+                    BoardStrings.Add(ChessBoard.ToString() + " b");
                 }
                 else
                 {
-                    await TimerSignal();
+                    BoardStrings.Add(ChessBoard.ToString() + " w");
                 }
 
-              
+                if (TimeOut != 0)
+                {
+                    if (IsTimerStarted != null && IsTimerStarted.Value) //IsTimerSet
+                    {
+                        await PauseTimer(signal.MovingPiece.Color.Value); // move signal never got empty piece
+                    }
+                    else
+                    {
+                        await TimerSignal();
+                    }
+                }
+
+
                 if (signal.FromUserId != FromUserId)
                 {
                     IsAllowToMove = true;
+                    Console.WriteLine(437);
                 }
-                
+
                 StateHasChanged();
-               
+                await UpdateDb();
+    // Console.WriteLine(421);
+    // Console.WriteLine(BoardStrings[0]);
             }
         });
     //SelectCoordinateSignal
@@ -444,18 +499,15 @@
                 }
                 if (IsTimerStarted != null && !IsTimerStarted.Value)
                 {
-                    
                     IsTimerStarted = true;
                 }
-                // await Module.InvokeVoidAsync("pauseTimer", 0);
-                 
+    // await Module.InvokeVoidAsync("pauseTimer", 0);
 
 
                 StateHasChanged();
             }
         });
     }
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -473,12 +525,11 @@
     //
     private async Task SendState()
     {
-
         var signal = new StateSignal(LastMoveNo, FromUserId, ToUserId);
-        
+
         await _hubConnection.SendAsync("StateSignal", signal);
     }
-    
+
     private void SelectSquare(int coordinate, bool isFirstSquare)
     {
         if (isFirstSquare)
@@ -532,30 +583,30 @@
         }
     }
 
-    private async Task Move(MoveSignal moveSignal)
+    private void Move(MoveSignal moveSignal)
     {
-        switch (moveSignal.MovingPiece.Type,moveSignal.FromSquare,moveSignal.ToSquare )
+        switch (moveSignal.MovingPiece.Type,moveSignal.FromSquare,moveSignal.ToSquare)
         {
             case (PieceType.wk,51,71):
-            
+
                 ChessBoard.Board[61] = new WhitePiece(PieceType.wr);
                 ChessBoard.Board[81] = new Piece();
                 break;
             case (PieceType.wk,51,31):
-            
+
                 ChessBoard.Board[41] = new WhitePiece(PieceType.wr);
                 ChessBoard.Board[11] = new Piece();
                 break;
             case (PieceType.bk,58,78):
-            
+
                 ChessBoard.Board[68] = new BlackPiece(PieceType.br);
                 ChessBoard.Board[88] = new Piece();
                 break;
             case (PieceType.bk,58,38):
-            
+
                 ChessBoard.Board[48] = new BlackPiece(PieceType.br);
                 ChessBoard.Board[18] = new Piece();
-                
+
                 break;
         }
         ChessBoard.Board[moveSignal.ToSquare] = moveSignal.MovingPiece;
@@ -563,9 +614,7 @@
         ToSquare = 0;
         FromSquare = 0;
         MovingPiece = new Piece();
-        // StateHasChanged();
-        BoardStrings.Add(ChessBoard.ToString());
-        // await SaveRecord();
+        LastMoveNo++;
     }
 
     private async Task SendMove()
@@ -612,12 +661,10 @@
         };
         await _hubConnection.SendAsync("TimerSignal", timerState);
     }
-    
+
     public async void SaveRecord(string key, string value)
     {
-        
         await _localStore.SetItemAsync(key, value);
-        
     }
 
     public async Task<string> GetRecord(string key)
@@ -630,29 +677,28 @@
         await _localStore.ClearAsync();
     }
 
-    private async Task SendBoardStringSignal(string boardString)
+    private async Task SendBoardStringSignal(bool isNull)
     {
+        var bSignal = new BoardStringSignal(ToUserId);
 
-        var bSignal = new BoardStringSignal(ToUserId)
+        if (!isNull)
         {
-            BoardString = boardString,
-            LastMoveNo = LastMoveNo
-        };
+            bSignal.BoardStrings = BoardStrings;
+            bSignal.LastMoveNo = LastMoveNo;
+            bSignal.BoardString = BoardString;
+        }
         await _hubConnection.SendAsync("BoardStringSignal", bSignal);
     }
 
     private string GenerateInviteLink()
     {
-        var myColor = "";
         var opponentColor = "";
         if (IsMyColorWhite)
         {
-            myColor = "w";
             opponentColor = "b";
         }
         else
         {
-            myColor = "b";
             opponentColor = "w";
         }
 
@@ -660,36 +706,39 @@
         var query = IsTimerSet
             ? new Dictionary<string, string>
             {
-                { "color",opponentColor },
+                { "color", opponentColor },
                 { "time", TimeOut.ToString() },
                 { "increment", IncrementTimerBy.ToString() }
-              
             }
             : new Dictionary<string, string>
             {
                 { "color", opponentColor },
                 { "time", "0" },
                 { "increment", "0" }
-              
             };
-        
-        
-        
+
+
     //todo add https://game-chess.herokuapp.com/ to constants
         return QueryHelpers.AddQueryString($"https://localhost:5001/board/{FromUserId}", query);
-      
     }
 
     public async Task StartNewGame()
     {
+        SetBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
+        IsRestaredGame = true;
         await DeleteRecord();
         LastMoveNo = 0;
-        await SendBoardStringSignal("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        BoardString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+        BoardStrings = new List<string> { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w" };
+        HighLightedSquare1 = "";
+        HighLightedSquare2 = "";
+
+        await SendBoardStringSignal(false);
+        IsAllowToMove = IsMyColorWhite;
     }
 
     async Task CopyInviteToClipboard()
     {
-        
         var temp = _invite;
         _invite = new State("Invite Link Copied", "oi oi-check", IsDisabled: true);
         await _clipboardService.WriteTextAsync(GenerateInviteLink());
@@ -700,18 +749,41 @@
         }
         await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
         _invite = temp;
-        
     }
+
     async Task CopyBoardToClipboard()
     {
-        
         var temp = _boardState;
         _boardState = new State("Board State Copied", "oi oi-check", IsDisabled: true);
-        await _clipboardService.WriteTextAsync(ChessBoard.ToString());
+        await _clipboardService.WriteTextAsync(BoardStrings.Last());
         await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
         _boardState = temp;
-        
     }
+
+    async Task NewGame()
+    {
+        var temp = _newGame;
+        _newGame = new State("Board is reset", "oi oi-check", IsDisabled: true);
+        await StartNewGame();
+        await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
+        _newGame = temp;
+    }
+
+    async Task CustomGame()
+    {
+        var temp = _customGame;
+        _customGame = new State("Board is set", "oi oi-check", IsDisabled: true);
+        if (CustomFen != null)
+        {
+            SetBoard(CustomFen);
+            BoardString = CustomFen;
+            BoardStrings.Add(CustomFen);
+            await SendBoardStringSignal(false);
+        }
+        await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
+        _customGame = temp;
+    }
+
     public void Dispose()
     {
         cts.Cancel(); // Cancel Task.Delay
@@ -720,14 +792,11 @@
 
     private void SetTimer()
     {
-       
         if (IsTimerSet && TimeOut > 0)
         {
             TimeOutInSeconds = TimeOut * 60;
             var increment = IncrementTimerBy;
             TimeIncrementBySeconds = increment > 0 ? increment : 3; //default
-                
-            
         }
         else
         {
@@ -735,6 +804,57 @@
             TimeIncrementBySeconds = 0;
         }
     }
+
+    private static string BoardStringsToString(IReadOnlyList<string> list)
+    {
+        var boardStrings = new StringBuilder();
+        boardStrings.Append(list[0]);
+        for (var i = 1; i < list.Count; i++)
+        {
+            boardStrings.Append(",");
+            boardStrings.Append(list[i]);
+        }
+
+        return boardStrings.ToString();
+    }
+
+    private async Task UpdateDb()
+    {
+        if (LastMoveNo % 5 == 0 && LastMoveNo != 0)
+        {
+            await DeleteRecord();
+            SaveRecord(LastMoveNo.ToString(), BoardStrings.Last());
+            SaveRecord("toUserId", ToUserId);
+            SaveRecord("lastMoveNo", "0");
+            SaveRecord("boardStrings", BoardStringsToString(BoardStrings));
+        }
+        else
+        {
+            SaveRecord(LastMoveNo.ToString(), BoardStrings.Last());
+            SaveRecord("lastMoveNo", LastMoveNo.ToString());
+        }
+    }
+
+    private void SetBoard(string lastString)
+    {
+        if (lastString == null) return;
+        var boardString = lastString.Split(' ');
+        ChessBoard.BoardSet(boardString[0]);
+        if (boardString.Length > 1 && boardString[1] == "w")
+        {
+            IsAllowToMove = IsMyColorWhite;
+        }
+        else if (boardString.Length > 1 && boardString[1] == "b")
+        {
+            IsAllowToMove = !IsMyColorWhite;
+        }
+    }
+
+    // private List<string> BoardStringsToString(string boardStrings)
+    // {
+    //     var list = boardStrings.Split(",").ToList();
+    //     return list;
+    // }
 
 
 

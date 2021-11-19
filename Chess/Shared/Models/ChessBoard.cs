@@ -39,7 +39,7 @@ namespace Chess.Shared.Models
                 {
                     for (var k = 1; k <= letter - 48; k++)
                     {
-                        Board.Add(ToCoordinate(i, j), new Piece());
+                        SetPiece(ToCoordinate(i, j), new Piece());
                         i++;
                     }
                 }
@@ -48,18 +48,30 @@ namespace Chess.Shared.Models
                 {
                     var piece = $"w{letter.ToString().ToLower()}";
                     var type = Enum.Parse<PieceType>(piece);
-                    Board.Add(ToCoordinate(i, j), new WhitePiece(type));
+                    SetPiece(ToCoordinate(i, j), new WhitePiece(type));
                     i++;
                 }
                 else if (letter < 115) // black
                 {
                     var piece = $"b{letter.ToString()}";
                     var type = Enum.Parse<PieceType>(piece);
-                    Board.Add(ToCoordinate(i, j), new BlackPiece(type));
+                    SetPiece(ToCoordinate(i, j), new BlackPiece(type));
                     i++;
                 }
             }
    
+        }
+
+        private void SetPiece(int key, Piece piece)
+        {
+            if (Board.ContainsKey(key))
+            {
+                Board[key] = piece;
+            }
+            else
+            {
+                Board.Add(key,piece);
+            }
         }
         public override string ToString()
         {
