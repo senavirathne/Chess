@@ -21,9 +21,8 @@
 <div class="container">
 
 
-    <button class="btn btn-primary" @onclick="NewGame" disabled=@_newGame.IsDisabled>
-        <i class="@_newGame.ClassName"></i> @_newGame.Text
-    </button>
+    <button class="btn btn-primary" @onclick="ReSet" disabled=@_reSet.IsDisabled>
+                <i class="@_reSet.ClassName"></i> @_reSet.Text</button>
     <span>&nbsp;</span>
     <span>&nbsp;</span>
 
@@ -33,7 +32,7 @@
         <i class="@_customGame.ClassName"></i> @_customGame.Text
     </button>
     <br/>
-    @if (ToUserState || IsRestaredGame)
+    @if (ToUserState)
     {
         <span>&nbsp;</span>
         <span>&nbsp;</span>
@@ -49,6 +48,7 @@
         <button class="btn btn-primary" @onclick="CopyBoardToClipboard" disabled=@_boardState.IsDisabled>
             <i class="@_boardState.ClassName"></i> @_boardState.Text
         </button>
+        
     }
     else
     {
@@ -87,6 +87,7 @@
 
 
     <div class="container">
+    <div style="height: 70vh">
         <div>
             @if (IsTimerSet)
             {
@@ -215,7 +216,7 @@
         }
 
     </div>
-
+    </div>
 
 </div>
 
@@ -228,7 +229,7 @@
     [Parameter]
     public string ToUserId { get; set; }
 
-    public bool IsRestaredGame { get; set; }
+    // public bool IsRestaredGame { get; set; }
     public string FromUserId { get; set; }
     public int TimeOut { get; set; }
     public int IncrementTimerBy { get; set; }
@@ -267,7 +268,7 @@
     record State(string Text, string ClassName, bool IsDisabled = false);
 
     State _boardState = new("Copy Board State", "oi oi-clipboard");
-    State _newGame = new("Restart game", "oi oi-clipboard");
+    State _reSet = new("Reset Board", "oi oi-clipboard");
     State _customGame = new("Start custom game", "oi oi-clipboard");
 
     [CascadingParameter]
@@ -720,15 +721,14 @@
                 { "increment", "0" }
             };
 
-
-    //todo add https://game-chess.herokuapp.com/ to constants
-        return QueryHelpers.AddQueryString($"https://game-chess.herokuapp.com/board/{FromUserId}", query);
+        // $"https://game-chess.herokuapp.com/board/{FromUserId}"
+        return QueryHelpers.AddQueryString(_navigationManager.ToAbsoluteUri($"/board/{FromUserId}").ToString(), query);
     }
 
     public async Task StartNewGame()
     {
         SetBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
-        IsRestaredGame = true;
+        // IsRestaredGame = true;
         await DeleteRecord();
         LastMoveNo = 0;
         BoardString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -763,13 +763,13 @@
         _boardState = temp;
     }
 
-    async Task NewGame()
+    async Task ReSet()
     {
-        var temp = _newGame;
-        _newGame = new State("Board is reset", "oi oi-check", IsDisabled: true);
+        var temp = _reSet;
+        _reSet = new State("Board is reset", "oi oi-check", IsDisabled: true);
         await StartNewGame();
         await Task.Delay(TimeSpan.FromSeconds(2), cts.Token);
-        _newGame = temp;
+        _reSet = temp;
     }
 
     async Task CustomGame()
