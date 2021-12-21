@@ -87,7 +87,7 @@
 
 
     <div class="container">
-    <div style="height: 70vh">
+    
         <div>
             @if (IsTimerSet)
             {
@@ -221,7 +221,7 @@
 </div>
 
 
-</div>
+
 
 
 @code {
@@ -251,6 +251,9 @@
     public string CustomFen { get; set; }
     public int LastMoveNo { get; set; }
     public bool IsFromQuery { get; set; }
+    
+    public bool NotAllowCastle { get; set; }
+    
 
     public ChessBoard ChessBoard { get; set; } = new(); // dictionary/
 
@@ -336,13 +339,13 @@
                 if (lastString != null)
                 {
                     BoardString = lastString;
-                    Console.WriteLine(291);
-                    Console.WriteLine(lastString);
+                    
+                    
                     LastMoveNo = int.Parse(lastMove);
 
                     SetBoard(lastString);
-                    Console.WriteLine(296);
-                    Console.WriteLine(lastMove);
+                    
+                    
                 }
                 if (tempList != null)
                 {
@@ -354,8 +357,8 @@
 
                         SetBoard(tempString);
                         LastMoveNo = tempList.Count;
-                        Console.WriteLine(309);
-                        Console.WriteLine(tempString);
+                        
+                        
                     }
                 }
             }
@@ -473,13 +476,13 @@
                 if (signal.FromUserId != FromUserId)
                 {
                     IsAllowToMove = true;
-                    Console.WriteLine(437);
+                    
                 }
 
                 StateHasChanged();
                 await UpdateDb();
-    // Console.WriteLine(421);
-    // Console.WriteLine(BoardStrings[0]);
+    // 
+    // 
             }
         });
     //SelectCoordinateSignal
@@ -564,7 +567,7 @@
                 MovingPiece = piece;
             }
 
-            if (ToSquare != 0 && FromSquare != 0 && MovingPiece.Color == IsMyColorWhite) //&& ToSquare != FromSquare
+            if (ToSquare != 0 && FromSquare != 0 && MovingPiece.Color == IsMyColorWhite && IsValidMove(MovingPiece.Type,FromSquare,ToSquare)) //&& ToSquare != FromSquare
             {
                 if (IsMyColorWhite && MovingPiece.Type == PieceType.wp && ToSquare % 10 == 8)
                 {
@@ -575,9 +578,10 @@
                     MovingPiece.Type = PieceType.bq;
                 }
 
-
-                await SendSelectCoordinate(coordinate, false);
+                
                 await SendMove();
+                await SendSelectCoordinate(FromSquare, true);
+                await SendSelectCoordinate(ToSquare, false);
                 IsAllowToMove = false;
             }
             else
@@ -589,6 +593,7 @@
 
     private void Move(MoveSignal moveSignal)
     {
+        // çåssle
         switch (moveSignal.MovingPiece.Type,moveSignal.FromSquare,moveSignal.ToSquare)
         {
             case (PieceType.wk,51,71):
@@ -836,6 +841,168 @@
             SaveRecord(LastMoveNo.ToString(), BoardStrings.Last());
             SaveRecord("lastMoveNo", LastMoveNo.ToString());
         }
+    }
+
+    private bool IsPathClear(int increment, int min, int max)
+    {
+        max -= increment;
+        while ( min < max)
+        {
+            min += increment;
+            if (ChessBoard.Board[min].Type != PieceType.mt)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // private bool IsValidCastle(int dif, int min, int max)
+    // {
+    //     return IsPathClear(dif)
+    // }
+
+    private bool IsValidRookMove(int dif,int min, int max)
+    {
+        if (dif % 10 == 0){ return IsPathClear(10, min, max);}
+        return dif <= 7 && IsPathClear(1, min, max);
+    }
+    private bool IsValidBishopMove(int dif,int min, int max)
+    {
+        if (dif % 11 == 0){ return IsPathClear(11, min, max);}
+        return dif % 9 == 0 && IsPathClear(9, min, max);
+    }
+    private bool IsValidQueenMove(int dif,int min, int max)
+    {
+        return IsValidBishopMove(dif, min, max) || IsValidRookMove(dif, min, max);
+    }
+
+    private bool IsValidMove(PieceType movingPiece,int fromSquare,int toSquare)
+    {
+        if (ChessBoard.Board[ToSquare].Type is PieceType.bk or PieceType.wk)
+        {
+            return false;
+        }
+        var min = 0;
+        var max = 0;
+        if (fromSquare < toSquare)
+        {
+            min = fromSquare;
+            max = toSquare;
+        }
+        else
+        {
+            min = toSquare;
+            max = fromSquare;
+        }
+        var dif = max - min;
+        
+        
+        
+        switch (movingPiece)
+        {
+            case PieceType.wk or PieceType.bk:
+                if (min + 10 == max || min + 1 == max || min + 11 == max || min + 9 == max)
+                {
+                    NotAllowCastle = true;
+                    return true;
+                    
+                }
+                if (!NotAllowCastle)
+                {
+                    if (fromSquare + 20 == toSquare )
+                    {
+                        return IsPathClear(10, fromSquare, fromSquare + 30);
+                    }
+                    if (fromSquare - 20 == toSquare )
+                    {
+                        return IsPathClear(10, fromSquare, fromSquare + 40);
+                    }
+                }
+                
+                break;
+            case PieceType.wr:
+                if (IsValidRookMove(dif, min, max))
+                {
+                    NotAllowCastle = true;
+                    return true;
+                }
+                break;
+                
+                
+
+            case PieceType.wb:
+
+                return IsValidBishopMove(dif, min, max);
+            case PieceType.br :
+                if (IsValidRookMove(dif, min, max))
+                {
+                    NotAllowCastle = true;
+                    return true;
+                }
+                break;
+
+            case PieceType.bb:
+                return IsValidBishopMove(dif, min, max);
+
+            case PieceType.wq:
+                return IsValidQueenMove(dif, min, max);
+            case PieceType.bq:  
+                
+                return IsValidQueenMove(dif, min, max);
+            
+                
+            case PieceType.wn or PieceType.bn:
+                if (min + 21 == max || min + 19 == max || min + 8 == max || min + 12 == max)
+                {
+                    return true;
+                    
+                }
+                break;
+            case PieceType.wp:
+                
+                if (dif == 2 && fromSquare % 10 == 2 && ChessBoard.Board[fromSquare + 1].Type == PieceType.mt && ChessBoard.Board[toSquare].Color == null)
+                {
+                   // todo make enpassant false
+                    return true;
+                }
+                if (toSquare - fromSquare == 1 && ChessBoard.Board[toSquare].Color == null || dif is 9 or 11 &&ChessBoard.Board[toSquare].Color == false)   
+                {
+                    
+                    return true;
+                    
+                }
+                if (dif is 11 or 9 && FromSquare % 10 ==5 && ChessBoard.Board[ToSquare].Type == PieceType.mt)
+                {
+                    ChessBoard.Board[toSquare - 1] = new Piece();
+                    return true;
+
+                }
+                
+                break;
+            case PieceType.bp:
+                
+                if (dif == 2 && fromSquare % 10 == 7 && ChessBoard.Board[fromSquare - 1].Type == PieceType.mt && ChessBoard.Board[toSquare].Color == null)
+                {
+                  
+                    return true;
+                }
+                if (fromSquare - toSquare == 1 && ChessBoard.Board[toSquare].Color == null || dif is 9 or 11 && ChessBoard.Board[toSquare].Color == true)
+                {
+                    
+                    return true;
+                    
+                }
+                if (dif is 11 or 9 && FromSquare % 10 ==4 && ChessBoard.Board[ToSquare].Type == PieceType.mt)
+                {
+                    ChessBoard.Board[toSquare + 1] = new Piece();
+                    return true;
+
+                }
+                
+                break;
+        }
+        return false;
     }
 
     private void SetBoard(string lastString)
